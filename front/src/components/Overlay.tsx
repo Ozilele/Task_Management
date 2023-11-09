@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux"
 import { changeFormMode, closeModal } from "../features/appSlice";
+import { FormMode } from "../types/project-types";
 
 type OverlayProps = {
   children: React.ReactNode;
@@ -9,7 +10,7 @@ function Overlay({ children }: OverlayProps) {
   const dispatch = useDispatch();
 
   const onOverlayClick = () => {
-    dispatch(changeFormMode("ADD"));
+    dispatch(changeFormMode(FormMode.ADD));
     dispatch(closeModal());
   }
 
@@ -20,4 +21,4 @@ function Overlay({ children }: OverlayProps) {
   )
 }
 
-export default Overlay
+export default Overlay;

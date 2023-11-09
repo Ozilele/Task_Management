@@ -16,7 +16,7 @@ const DropdownList = ({ style, setFunc, items }: DropdownListProps) => {
           if(typeof item === "string") {
             const spec = item[0] + item.slice(1).toLowerCase();
             return (
-              <li key={i} onClick={() => setFunc(`${spec}`)} className='w-full py-1 border-b-2 border-stone-700 hover:bg-slate-400'>{spec}</li>
+              <li key={i} onClick={() => setFunc(item)} className='w-full py-1 border-b-2 border-stone-700 hover:bg-slate-400'>{spec}</li>
             )
           } else if(typeof item === "object") {
             return (

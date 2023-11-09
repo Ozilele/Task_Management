@@ -1,11 +1,10 @@
 import { DraggableProvidedDraggableProps } from "react-beautiful-dnd";
-import ArrowForwardRoundedIcon from '@mui/icons-material/ArrowForwardRounded';
 import DeleteRoundedIcon from '@mui/icons-material/DeleteRounded';
 import ModeEditOutlineRoundedIcon from '@mui/icons-material/ModeEditOutlineRounded';
 import { IconButton } from "@mui/material";
-import { useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { changeFormMode, openModal, setTaskFormData } from "../features/appSlice";
+import { FormMode } from "../types/project-types";
 
 type TaskItemProps = {
   taskId: string,
@@ -27,11 +26,10 @@ type TaskItemProps = {
 }
 
 const TaskItem = ({ taskId, reference, dragProps, dragHandle, data }: TaskItemProps) => {
-  const { id }= useParams(); // getting id of the project
   const dispatch = useDispatch();
 
   const editTask = async () => {
-    dispatch(changeFormMode("EDIT"));
+    dispatch(changeFormMode(FormMode.EDIT));
     dispatch(setTaskFormData({ // Aplying data for form in the modal window
       name: data.name,
       taskId,
@@ -51,12 +49,12 @@ const TaskItem = ({ taskId, reference, dragProps, dragHandle, data }: TaskItemPr
       {...dragHandle}
       className={`w-full flex flex-col my-2 bg-slate-200 text-black rounded-md px-1 min-h-[115px] lg:min-h-[140px]`}
     >
-      <div className="flex-1 flex flex-row-reverse items-center gap-2">
-        <IconButton onClick={editTask} className="!px-1 !py-1">
-          <ModeEditOutlineRoundedIcon/>
+      <div className="flex-1 flex flex-row-reverse items-center gap-1 sm:gap-1.5">
+        <IconButton onClick={editTask} className="!px-1 !py-1 md:!py-1.5">
+          <ModeEditOutlineRoundedIcon className="!w-6 !h-6 md:!w-7 md:!h-7"/>
         </IconButton>
-        <IconButton className="!px-1 !py-1">
-          <DeleteRoundedIcon className="!text-red-600"/>
+        <IconButton className="!px-1 !py-1 md:!py-1.5">
+          <DeleteRoundedIcon className="!text-red-600 !w-6 !h-6 md:!w-7 md:!h-7"/>
         </IconButton>
       </div>
       <div className="flex-3 flex items-center pl-1">

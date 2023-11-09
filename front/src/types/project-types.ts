@@ -23,6 +23,16 @@ export enum TaskState {
   DELETED = "DELETED"
 }
 
+export enum FormMode {
+  ADD = "ADD",
+  EDIT = "EDIT"
+}
+
+export enum AppTheme {
+  DARK = "dark",
+  LIGHT = "light"
+}
+
 export type User = {
   id: string,
   name: string,
@@ -75,6 +85,31 @@ export interface MyTask {
 
 export type TaskItem = {
   name: string,
+  estimation: string,
+  specialization: string,
+  assignedTo: {
+    userId: string,
+  },
+  dateCreated: string,
+  createdBy: {
+    userId: string
+  }
+}
+
+export type TaskData = {
+  name: string,
+  estimation: string,
+  specialization: string,
+  assignedTo: {
+    id: string,
+    name: string,
+    specialization: Specialization
+  }
+}
+
+export type TaskFormData = {
+  name: string,
+  taskId?: string,
   estimation: string,
   specialization: string,
   assignedTo: {

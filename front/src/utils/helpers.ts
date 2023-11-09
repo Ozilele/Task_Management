@@ -1,4 +1,5 @@
 import { Estimation, Specialization } from "../types/project-types";
+import { v4 as uuidv4 } from 'uuid';
 
 export const backend_url = "http://localhost:4444";
 
@@ -27,3 +28,18 @@ export const specializations = [
   Specialization.DEVOPS,
   Specialization.UX_UI
 ]
+
+export const my_columns = {
+  [uuidv4()]: {
+    title: "NOT_ASSIGNED",
+    tasks: []
+  },
+  [uuidv4()]: {
+    title: "IN_PROGRESS",
+    tasks: [],
+  },
+  [uuidv4()]: {
+    title: "CLOSED",
+    tasks: [],
+  }
+}

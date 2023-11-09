@@ -1,36 +1,20 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
-import { API_URL, standard_headers } from '../utils/helpers';
+import { API_URL, my_columns, standard_headers } from '../utils/helpers';
 import { MyTask, Task, User } from '../types/project-types';
 import { DragDropContext } from 'react-beautiful-dnd';
 import AddIcon from '@mui/icons-material/Add';
 import TaskModalWindow from '../components/TaskModalWindow';
-import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'framer-motion';
 import TableColumn from '../components/TableColumn';
 import { useSelector } from 'react-redux';
 import { selectModalOpen, toggleModal } from '../features/appSlice';
 import { useDispatch } from 'react-redux';
 
-const my_columns = {
-  [uuidv4()]: {
-    title: "NOT_ASSIGNED",
-    tasks: []
-  },
-  [uuidv4()]: {
-    title: "IN_PROGRESS",
-    tasks: [],
-  },
-  [uuidv4()]: {
-    title: "CLOSED",
-    tasks: [],
-  }
-}
-
 const Project = () => {
   const { id }= useParams(); // getting id of the project
-  const [ isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [columns, setColumns] = useState(my_columns);
   const modalOpen = useSelector(selectModalOpen);
   const dispatch = useDispatch();
@@ -38,14 +22,28 @@ const Project = () => {
   const [users, setUsers] = useState<User[]>([]);
   
   console.log(columns);
+  console.log(users);
 
   useEffect(() => {
     setIsLoading(true);
-    axios.get(`${API_URL}/project/${id}/task`, standard_headers)
-      .then((res) => {
-        console.log(res.data);
-        if(res.status === 200 && res.data) {
-          const myTasks: MyTask[] = res.data.map((task: Task) => {
+    async function getData() {
+      const API_URLS = [`${API_URL}/project/${id}/task`, `${API_URL}/project/${id}`];
+      const promises = API_URLS.map((apiUrl) => {
+        return axios.get(apiUrl, standard_headers)
+          .then((res) => {
+            return res.data;
+          })
+          .catch(err => {
+            console.error(err);
+            return err;
+          });
+      });
+      const allData = await Promise.all(promises);
+      allData.map((data) => {
+        if(data.projectCredentials) {
+          setUsers(data.projectCredentials.users);
+        } else {
+          const myTasks: MyTask[] = data.map((task: Task) => {
             const date = new Date(task.createdAt);
             const formattedDate = date.toLocaleString();
             const myTask = {
@@ -75,10 +73,9 @@ const Project = () => {
           });
           setColumns(updatedColumns);
         }
-      })
-      .catch((err) => {
-        console.error(err);
       });
+    }
+    getData();
   }, []);
 
 
@@ -134,7 +131,6 @@ const Project = () => {
       <motion.button
         whileHover={{
           scale: 1.1,
-          // transition: { type: "spring", duration: 0.35}
         }}
         whileTap={{ scale: 0.9 }}
         onClick={() => dispatch(toggleModal(true))}
