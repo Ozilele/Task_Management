@@ -2,18 +2,19 @@ import { memo, useEffect, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DropdownList from './DropdownList';
-import { Estimation, Specialization, TaskData, User } from '../types/project-types';
+import { Estimation, Specialization, User } from '../types/project-types';
 import { useSelector } from 'react-redux';
 import { selectTaskFormData } from '../features/appSlice';
 
 type DropdownInputProps = {
   property: string,
+  style?: React.CSSProperties, 
   label: string,
   items: Estimation[] | Specialization[] | User[],
   setFunc: (property: string, item: string | User) => void,
 }
 
-function DropdownInput({ property, label, items, setFunc }: DropdownInputProps) {
+function DropdownInput({ property, style, label, items, setFunc }: DropdownInputProps) {
 
   const [value, setValue] = useState<string | User>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -37,7 +38,11 @@ function DropdownInput({ property, label, items, setFunc }: DropdownInputProps) 
   }, []);
 
   return (
-    <div onClick={() => setDropdownOpen(!dropdownOpen)} className='w-full max-w-[700px] flex flex-col gap-1 text-zinc-50'>
+    <div 
+      onClick={() => setDropdownOpen(!dropdownOpen)} 
+      style={style && style}
+      className='w-full max-w-[700px] flex flex-col gap-1 text-zinc-50'
+    >
       <label>{label}</label>
       <div className='w-full relative flex items-center justify-between'>
         <input

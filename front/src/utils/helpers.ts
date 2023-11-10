@@ -6,9 +6,9 @@ export const backend_url = "http://localhost:4444";
 export const API_URL = "https://task-manager-api-401408.lm.r.appspot.com"
 export const standard_headers = {
   headers: {
-      'Content-Type': 'application/json',
-      'user-id': "u_rdokvuomzxlexevwbcfr",
-      'secret-key': "zzkukrviybwqreleibsduakorgqqgmeiwdgackmuitinkysygvpedhryywjfqltlksuuiklhqznmnayxvxnhnpmvsfanahzgajsncpoblkqbhdyldntawlnzbvmhqczp"
+    'Content-Type': 'application/json',
+    'user-id': "u_rdokvuomzxlexevwbcfr",
+    'secret-key': "zzkukrviybwqreleibsduakorgqqgmeiwdgackmuitinkysygvpedhryywjfqltlksuuiklhqznmnayxvxnhnpmvsfanahzgajsncpoblkqbhdyldntawlnzbvmhqczp"
   }
 }
 

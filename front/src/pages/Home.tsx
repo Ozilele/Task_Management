@@ -72,19 +72,19 @@ const Home = () => {
         />
         <SearchOutlinedIcon/>
       </div>
-      <section className='w-11/12 h-full my-12 md:my-8 mx-auto flex flex-col items-center'>
-        <div className='relative w-full mb-3 max-w-3xl flex justify-center'>
+      <section className='w-full h-full my-12 md:my-8 mx-auto flex flex-col justify-center items-center'>
+        <div className='relative w-full mb-8 sm:mb-10 flex justify-center'>
           <h3 className='mb-3 italic antialiased text-left text-2xl'>My Projects</h3>
           <button 
-            className='absolute right-3 flex items-center gap-0.5 bg-appPurple px-2 py-2 rounded-md hover:opacity-80'
+            className='absolute right-2 sm:right-3 flex items-center gap-0.5 bg-appPurple px-2 py-2 rounded-md hover:opacity-80'
             onClick={handleAddProject}
           >
             <AddCircleRoundedIcon/>
-            <span>Add Project</span>
+            <span className='opacity-0 sm:opacity-100 hidden sm:block'>Add Project</span>
           </button>
         </div>
-        <div className='w-full min-h-[220px] flex-1 flex items-center justify-center gap-2'>
-          {isLoading && <img className='w-11 h-11flex justify-center items-center' src={loader} alt='home_loader'/>}
+        <div className='w-full mx-auto min-h-[220px] flex flex-wrap sm:flex-row items-center justify-center gap-6 md:gap-4.5 lg:gap-5'>
+          {isLoading && <img className='w-11 h-11 flex justify-center items-center' src={loader} alt='home_loader'/>}
           {!isLoading &&
             projects.map((project: Project) => {
               return (
