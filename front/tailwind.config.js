@@ -13,7 +13,7 @@ export default {
         appPurple: "#673AB7",
         modalBg: "rgba(0, 0, 0, 0.6)",
         projectBg: "#373737",
-        // "#323232",
+        registerBlue: "#83A2FF",
       },
       minHeight: {
         '1/2': '100px'
