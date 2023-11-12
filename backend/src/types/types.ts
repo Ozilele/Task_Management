@@ -1,8 +1,8 @@
 export enum UserStack {
-  Frontend = "Frontend",
-  Backend = "Backend",
-  Mobile = "Mobile",
-  DevOps = "DevOps"
+  FRONTEND = "Frontend",
+  BACKEND = "Backend",
+  MOBILE = "Mobile",
+  DEVOPS = "DevOps"
 }
 
 export interface User {
@@ -10,4 +10,9 @@ export interface User {
   email: string,
   stack?: UserStack,
   password: string,
+}
+
+export type UserToken = {
+  userId: string,
+  email: string
 }

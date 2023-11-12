@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose";
-import { UserStack } from "../types/types.js";
 const userSchema = new Schema({
     name: {
         type: String,
@@ -11,7 +10,9 @@ const userSchema = new Schema({
         lowercase: true,
         unique: true,
     },
-    stack: UserStack,
+    stack: {
+        type: String,
+    },
     password: {
         type: String,
         required: [true, "Please enter your password"]

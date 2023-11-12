@@ -1,7 +1,7 @@
 export var UserStack;
 (function (UserStack) {
-    UserStack["Frontend"] = "Frontend";
-    UserStack["Backend"] = "Backend";
-    UserStack["Mobile"] = "Mobile";
-    UserStack["DevOps"] = "DevOps";
+    UserStack["FRONTEND"] = "Frontend";
+    UserStack["BACKEND"] = "Backend";
+    UserStack["MOBILE"] = "Mobile";
+    UserStack["DEVOPS"] = "DevOps";
 })(UserStack || (UserStack = {}));

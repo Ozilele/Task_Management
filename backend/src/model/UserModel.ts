@@ -12,7 +12,9 @@ const userSchema = new Schema<User>({
     lowercase: true,
     unique: true,
   },
-  stack: UserStack,
+  stack: {
+    type: String,
+  },
   password: {
     type: String,
     required: [true, "Please enter your password"]
