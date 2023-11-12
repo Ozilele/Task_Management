@@ -2,21 +2,36 @@ import { Avatar } from "@mui/material"
 import { Estimation, Specialization, User } from "../types/project-types"
 
 type DropdownListProps = {
+  value: string | User,
   style?: React.CSSProperties,
   setFunc: (arg: string | User) => void,
   items: Estimation[] | User[] | Specialization[]
 }
 
-const DropdownList = ({ style, setFunc, items }: DropdownListProps) => {
+const DropdownList = ({ value, style, setFunc, items }: DropdownListProps) => {
+
+  const onItemClick = (e: React.MouseEvent<HTMLLIElement>, item: string) => {
+    // e.stopPropagation();
+    setFunc(item);
+  }
+
+  const isOptionSelected = (item: string | User) => {
+    return item === value;
+  }
 
   return (
-    <div style={style} className='z-10 flex flex-col absolute top-full w-full bg-white rounded-t-none rounded-md'>
-      <ul className='flex flex-col gap-2 list-none px-2 mb-2 min-h-1/2'>
+    <div style={style} className='z-10 mt-1 flex flex-col absolute top-full w-full bg-white rounded-t-none rounded-md'>
+      <ul className='flex flex-col gap-2 list-none px-2 mb-3.5 mt-1.5 min-h-1/2'>
         {items.map((item, i) => {
           if(typeof item === "string") {
             const spec = item[0] + item.slice(1).toLowerCase();
             return (
-              <li key={i} onClick={() => setFunc(item)} className='w-full py-1 border-b-2 border-stone-700 hover:bg-slate-400'>{spec}</li>
+              <li 
+                key={i} 
+                onClick={(e) => onItemClick(e, item)} 
+                className={`w-full py-1  px-1 border-b-2 border-stone-700 hover:bg-slate-300 cursor-pointer ${isOptionSelected(item) ? "bg-registerBlue" : ""}`}>
+                  {spec}
+              </li>
             )
           } else if(typeof item === "object") {
             return (

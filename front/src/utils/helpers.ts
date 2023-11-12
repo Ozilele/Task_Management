@@ -43,3 +43,39 @@ export const my_columns = {
     tasks: [],
   }
 }
+
+export const inputsArr = [
+  {
+    name: "name",
+    placeholder: "Name",
+    type: 'text'
+  },
+  {
+    name: "email",
+    placeholder: "Email",
+    type: "email"
+  }
+]
+
+export const specializationItems = [
+  "Frontend", "Backend", "UX/UI", "DevOps"
+];
+
+export const validateEmailAddress = (email: string) => {
+  const emailFormat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+  if(email.match(emailFormat)) {
+    return true;
+  }
+  return false;
+}
+
+export const validatePassword = (password: string) => {
+  const passwordRegex = /^(?=.*[A-Za-z])(?=.*[\d$@.!%*#?&])[A-Za-z\d$@.!%*#?&]{6,15}$/;
+  // Password Regex (?=.*[A-Za-z]) - at least 1 ASCII letter
+  // (?=.*[\d$@.!%*#?&]) - at least 1 digit or any of the special chars in the class
+  // [A-Za-z\d$@.!%*#?&]{8,15} string only consist of letters, digits and special chars from 6 to 15 occurences
+  if(password.match(passwordRegex)) {
+    return true;
+  }
+  return false;
+}
