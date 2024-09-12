@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
+    "target": "ES2020", // kod TypeScript zostanie skompilowany do ECMAScript 2k20
     "useDefineForClassFields": true,
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "module": "ES2020",
@@ -8,18 +8,18 @@
 
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
+    "allowImportingTsExtensions": true, // pozwala na import plików .ts z rozszerzeniami
     "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
+    "isolatedModules": true, // przetwarzanie kazdego pliku TS oddzielnie
+    "noEmit": true, // zapobiega generowaniu jakiegokolwiek kodu wynikowego
     "jsx": "react-jsx",
 
     /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
+    "strict": true, // najbardziej restrykcyjne reguły
+    "noUnusedLocals": true, // zgłasza błędy kiedy lokalne zmienne są zadeklarowane, ale nie uzywane
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"],
-  "references": [{ "path": "./tsconfig.node.json" }]
+  "include": ["src"], // które pliki maja byc uwzglednione w kompilacji
+  "references": [{ "path": "./tsconfig.node.json" }] 
 }

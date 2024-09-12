@@ -46,9 +46,9 @@ export const my_columns = {
 
 export const inputsArr = [
   {
-    name: "name",
-    placeholder: "Name",
-    type: 'text'
+    name: "username",
+    placeholder: "Username",
+    type: "text"
   },
   {
     name: "email",
