@@ -13,7 +13,7 @@ class UserModelSerializer(serializers.ModelSerializer):
             "password": {"write_only": True}
         }
 
-    def create(self, validated_data):
+    def create(self, validated_data): # defines how django object model is created from the request's data
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
@@ -22,7 +22,7 @@ class UserModelSerializer(serializers.ModelSerializer):
         )
         return user
 
-    def to_representation(self, instance):
+    def to_representation(self, instance): # Conversion from django object model to JSON format
         ret = super().to_representation(instance)
         ret.pop('password', None)
         return ret

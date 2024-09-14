@@ -7,11 +7,15 @@ class TaskSerializer(serializers.ModelSerializer):
         fields = '__all__'
         extra_kwargs = {"author": {"read_only": True}}
 
-    def create(self, validated_data):
+    def create(self, validated_data): # creates django object model from request's data
         assigned_users = validated_data.pop('assigned_to')
         instance = Task.objects.create(**validated_data)
         instance.assigned_to = assigned_users
         return instance
+    
+    def to_representation(self, instance):
+        obj = super().to_representation(instance)
+        return obj
 
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -25,3 +29,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         instance.team = project_team
         return instance
     
+    def to_representation(self, instance): # TO JSON
+        obj = super().to_representation(instance)
+        # obj.pop("last_modified")
+        # obj.pop("created_at")
+        return obj
+

@@ -7,7 +7,7 @@ class Project(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.DO_NOTHING, related_name="created_projects", default=1)
-    team = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="assigned_projects", blank=False)
+    team = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="assigned_projects")
 
     def __str__(self) -> str:
         return self.title

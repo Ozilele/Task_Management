@@ -10,8 +10,17 @@ class AssignedProjectList(generics.ListAPIView):
 
     def get_queryset(self): # get projects for which user is assigned to
         user = self.request.user
+        # print(user)
         return user.assigned_projects.all()
         # return Project.objects.filter(team=user)
+
+class CreatedProjectList(generics.ListAPIView):
+    serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self): # get user's created projects
+        user = self.request.user
+        return Project.objects.filter(author=user)
 
 class TaskListCreate(generics.ListCreateAPIView):
     serializer_class = TaskSerializer
