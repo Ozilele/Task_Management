@@ -23,7 +23,6 @@ function ProjectForm() {
   });
   const dispatch = useDispatch();
 
-
   return (
     <div onClick={(e) => e.stopPropagation()} className='relative w-11/12 sm:w-3/5 max-w-xl h-3/6 lg:h-56 max-h-[670px] bg-neutral-700 rounded-md px-3 py-2 md:py-4'>
       <div className='relative w-full h-full flex flex-col'>

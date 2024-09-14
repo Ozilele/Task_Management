@@ -33,6 +33,30 @@ export enum AppTheme {
   LIGHT = "light"
 }
 
+export type AuthInputElement = {
+  name: string,
+  error_name?: string,
+  error?: {
+    msg: string,
+    style: string,
+  } 
+  placeholder: string,
+  type: string,
+  style: string,
+}
+
+export type AuthFormInputsState = {
+  username?: string,
+  email: string,
+  password: string,
+  repeat_password: string,
+}
+
+export type AuthFormErrors = {
+  passwordError: string,
+  repeatedPasswordError: string,
+}
+
 export type User = {
   id: string,
   name: string,
@@ -41,8 +65,12 @@ export type User = {
 
 export type Project = {
   id: number,
-  name: string,
-  users: User[],
+  title: string,
+  description: string,
+  team: number[],
+  author: number,
+  created_at: string,
+  last_modified: string,
 }
 
 export interface TaskCredentials {

@@ -1,17 +1,21 @@
-import { useEffect, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import api from "../api"
 import { Navigate } from "react-router-dom"
 import { jwtDecode } from "jwt-decode"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"
 
-const ProtectedRoute = ({ children }) => {
-    const [isAuthorized, setIsAuthorized] = useState(null)
+type ProtectedRouteProps = {
+    children: ReactNode;
+}
+
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
+    const [isAuthorized, setIsAuthorized] = useState<boolean>(null)
 
     useEffect(() => {
         authenticate().catch(() => {
             setIsAuthorized(false);
-        })
-    }, [])
+        });
+    }, []);
 
     const refreshToken = async () => {
         const refresh_token = localStorage.getItem(REFRESH_TOKEN)
@@ -26,24 +30,25 @@ const ProtectedRoute = ({ children }) => {
                 setIsAuthorized(false)
             }
         } catch(err) {
-            console.log(err)
-            setIsAuthorized(false)
+            console.log(err);
+            setIsAuthorized(false);
         }
     }
 
     const authenticate = async () => {
-        const token = localStorage.getItem(ACCESS_TOKEN)
+        const token = localStorage.getItem(ACCESS_TOKEN);
         if(!token) {
-            setIsAuthorized(false)
+            setIsAuthorized(false);
             return
         }
-        const decoded = jwtDecode(token)
-        const tokenExpiration = decoded.exp
+        const decoded = jwtDecode(token);
+        const tokenExpiration = decoded.exp;
         const now = Date.now() / 1000 // to seconds
-        if(tokenExpiration < now) {
-            await refreshToken()
+        if(tokenExpiration! < now) {
+            console.log("Getting new access token by refresh token...");
+            await refreshToken();
         } else {
-            setIsAuthorized(true)
+            setIsAuthorized(true);
         }
     }
 

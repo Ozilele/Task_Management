@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react'
-import axios from 'axios';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import loader from "../assets/loader.svg";
+import api from '../api';
+import { formatDate } from '../utils/helpers';
 import ProjectItem from '../components/ProjectItem';
 import { Project } from '../types/project-types';
-import { API_URL, standard_headers } from '../utils/helpers';
-import { useDispatch } from 'react-redux';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { openModal, selectModalOpen } from '../features/appSlice';
 import ProjectModalWindow from '../components/ProjectModalWindow';
 
@@ -16,8 +15,7 @@ type ProjectInput = {
 }
 
 const Home = () => {
-
-  const [projects, setProjects] = useState<Project[]>([]);
+  const [assignedProjects, setAssignedProjects] = useState<Project[]>([]);
   const [projectInput, setProjectInput] = useState<ProjectInput>({
     project: ""
   });
@@ -26,26 +24,49 @@ const Home = () => {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    axios.get(`${API_URL}/project/user`, standard_headers).then((res) => {
-      if(res.status === 200) {
-        console.log(res);
-        const projects = res.data.map((project: any) => {
+    getUserAssignedProjects();
+  }, []);
+
+  const getUserAssignedProjects = async () => {
+    try {
+      setIsLoading(true);
+      let response = await api.get("/api/projects/");
+      console.log(response.data);
+      if(response.status === 200) {
+        const assigned_projects = response.data.map((project: Project) => {
           const newProject: Project = {
-            id: project._id,
-            name: project.projectCredentials.name,
-            users: project.projectCredentials.users
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            author: project.author,
+            team: project.team,
+            created_at: formatDate(project.created_at),
+            last_modified: formatDate(project.last_modified)
           }
           return newProject;
         });
-        console.log(projects);
-        setProjects(projects);
+        setAssignedProjects(assigned_projects);
       }
-    }).catch(err => {
-      console.log(err);
-    }).finally(() => {
+    } catch(err) {
+      console.log(err.response);
+    } finally {
       setIsLoading(false);
-    });
-  }, []);
+    }
+  }
+
+  const getUserCreatedProjects = async () => {
+    try {
+      setIsLoading(true);
+      let response = await api.get("/api/created_projects/");
+      console.log(response.data);
+      if(response.status === 200) {
+      }
+    } catch(err) {
+      console.log(err.response);
+    } finally {
+      setIsLoading(false);
+    }
+  }
 
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setProjectInput((prev) => {
@@ -86,13 +107,11 @@ const Home = () => {
         <div className='w-full mx-auto min-h-[220px] flex flex-wrap sm:flex-row items-center justify-center gap-6 md:gap-4.5 lg:gap-5'>
           {isLoading && <img className='w-11 h-11 flex justify-center items-center' src={loader} alt='home_loader'/>}
           {!isLoading &&
-            projects.map((project: Project) => {
+            assignedProjects.map((project: Project) => {
               return (
                 <ProjectItem
                   key={project.id}
-                  id={project.id}
-                  name={project.name}
-                  users={project.users}
+                  data={project}
                 />
               )
             })

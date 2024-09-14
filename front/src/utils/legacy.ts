@@ -9,3 +9,26 @@ className='w-full relative flex justify-between items-center max-w-lg m-auto gap
 {!dropdownMenuOpen && <ExpandLessIcon onClick={() => setDropdownMenu(!dropdownMenuOpen)} className='absolute right-1 m-auto' />}
 {dropdownMenuOpen && <DropdownList value={stack} setFunc={setStack} items={specializationItems}/> }
 </div> */}
+
+useEffect(() => {
+    api.get("/api/projects", )
+    axios.get(`${API_URL}/project/user`, standard_headers).then((res) => {
+      if(res.status === 200) {
+        console.log(res);
+        const projects = res.data.map((project: any) => {
+          const newProject: Project = {
+            id: project._id,
+            name: project.projectCredentials.name,
+            users: project.projectCredentials.users
+          }
+          return newProject;
+        });
+        console.log(projects);
+        setProjects(projects);
+      }
+    }).catch(err => {
+      console.log(err);
+    }).finally(() => {
+      setIsLoading(false);
+    });
+  }, []);

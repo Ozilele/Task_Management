@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Home from './pages/Home'
 import Project from './pages/Project'
 import Navigation from './components/Navigation'
+import ProtectedRoute from './components/ProtectedRoute'
 
 const router = createBrowserRouter([
   {
@@ -24,10 +25,10 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: 
-    <>
-      <Navigation/>
-      <Outlet/>
-    </>,
+      <ProtectedRoute>
+        <Navigation/>
+        <Outlet/>
+      </ProtectedRoute>,
     children: [
       {
         index: true,
