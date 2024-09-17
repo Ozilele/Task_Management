@@ -3,6 +3,7 @@ import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import AddCircleRoundedIcon from '@mui/icons-material/AddCircleRounded';
 import loader from "../assets/loader.svg";
 import api from '../api';
+import axios from 'axios';
 import { formatDate } from '../utils/helpers';
 import ProjectItem from '../components/ProjectItem';
 import { Project } from '../types/project-types';
@@ -47,22 +48,30 @@ const Home = () => {
         });
         setAssignedProjects(assigned_projects);
       }
-    } catch(err) {
-      console.log(err.response);
+    } catch(error) {
+      if(axios.isAxiosError(error)) {
+        console.log(error.response);
+      } else {
+        console.error(error);
+      }
     } finally {
       setIsLoading(false);
     }
   }
 
-  const getUserCreatedProjects = async () => {
+  const getUserCreatedProjects = async () => { // to test
     try {
       setIsLoading(true);
       let response = await api.get("/api/created_projects/");
       console.log(response.data);
       if(response.status === 200) {
       }
-    } catch(err) {
-      console.log(err.response);
+    } catch(error) {
+      if(axios.isAxiosError(error)) {
+        console.log(error.response);
+      } else {
+        console.error(error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -76,7 +85,6 @@ const Home = () => {
       }
     });
   }
-
   const handleAddProject = () => {
     dispatch(openModal());
   }
@@ -87,6 +95,7 @@ const Home = () => {
         <input
           type='text'
           name='project'
+          value={projectInput.project}
           className='w-full border-none outline-none bg-transparent text-lg'
           onChange={onInputChange}
           placeholder='Project Search...'

@@ -1,49 +1,54 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { FormMode, Specialization, TaskData, User } from '../types/project-types';
-import { API_URL, fibNumbers, specializations, standard_headers } from '../utils/helpers';
+import { FormMode, Specialization, TaskFormData, User } from '../types/project-types';
+import { API_URL, specializations, standard_headers, task_states } from '../utils/helpers';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
-import axios from 'axios';
 import { useDispatch } from 'react-redux';
 import { changeFormMode, closeModal, resetTaskFormData, selectFormMode, selectTaskFormData } from '../features/appSlice';
 import { useSelector } from 'react-redux';
 import Overlay from './Overlay';
 import DropdownInput from './DropdownInput';
+import api from '../api';
 
 type TaskModalWindowProps = {
-  projectId: string | undefined,
-  users: User[],
+  projectId: number,
+  projectTeam: User[],
 }
 
-const TaskModalWindow = ({ projectId, users }: TaskModalWindowProps) => {
+type TaskData = {
+  title: string,
+  content: string,
+  state: string,
+  currAssignedUsers: User[] | null;
+}
+
+const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
   const [editTaskInfo, setEditTaskInfo] = useState({
     author: "",
     dateCreated: "",
   });
   const [taskData, setTaskData] = useState<TaskData>({
-    name: "",
-    estimation: "",
-    specialization: "",
-    assignedTo: {
-      id: "",
-      name: "",
-      specialization: Specialization.NONE
-    }
+    title: "",
+    content: "",
+    state: "",
+    currAssignedUsers: null,
   }); 
   const formMode = useSelector(selectFormMode);
-  const taskFormData = useSelector(selectTaskFormData);
+  const savedTaskData = useSelector(selectTaskFormData);
   const dispatch = useDispatch();
 
   useEffect(() => {
-    if(taskFormData !== null) {
-      setTaskData((prev) => ({
-        ...prev,
-        name: taskFormData.name
-      }));
-      setEditTaskInfo({
-        author: taskFormData.createdBy.userId,
-        dateCreated: taskFormData.dateCreated,
+    if(formMode === FormMode.EDIT) {
+      setTaskData({
+        title: savedTaskData!.title,
+        content: savedTaskData!.content,
+        state: savedTaskData!.state,
+        currAssignedUsers: savedTaskData!.currAssignedUsers
       });
+      // setEditTaskInfo({
+      //   author: savedTaskData.createdBy.userId,
+      //   dateCreated: savedTaskData.dateCreated,
+      // });
     }
   }, []);
 
@@ -56,39 +61,36 @@ const TaskModalWindow = ({ projectId, users }: TaskModalWindowProps) => {
   
   const handleFormSubmission = async (event: React.ChangeEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if(formMode === FormMode.ADD) {
+    if(formMode === FormMode.ADD) { // adding task
       try {
-        const response = await axios.post(`${API_URL}/project/${projectId}/task`, {
-          name: taskData.name,
-          assignedTo: {
-            userId: taskData.assignedTo.id,
-          },
-          estimation: taskData.estimation,
-          specialization: taskData.specialization,
-        }, standard_headers);
-        console.log(response);
+        let response = await api.post(`/projects/${projectId}/tasks/`, {
+          title: taskData.title,
+          content: taskData.content,
+          state: taskData.state,
+          assigned_to: taskData.currAssignedUsers,
+        });
+        console.log(response.data);
         if(response.status === 201) {
           dispatch(closeModal());
         }
       } catch(err) {
         console.error(err);
       }
-    } else if(formMode === FormMode.EDIT) {
+    } else if(formMode === FormMode.EDIT) { // editing task
       try {
-        const response = await axios.put(`${API_URL}/project/${projectId}/task/${taskFormData?.taskId}`, {
-          name: taskData.name,
-          assignedTo: {
-            userId: taskData.assignedTo.id
-          },
-          estimation: taskData.estimation,
-          specialization: taskData.specialization,
-        }, standard_headers);
-        console.log(response);
-        if(response.status == 200) {
-          dispatch(resetTaskFormData());
-          dispatch(changeFormMode(FormMode.ADD));
-          dispatch(closeModal());
-        }
+        let response = await api.put(`/api/projects/${projectId}/tasks/update/${savedTaskData?.task_id}/`, {
+          title: taskData.title,
+          content: taskData.content,
+          state: taskData.state,
+          assigned_to: taskData.currAssignedUsers
+        });
+        console.log(response.data);
+        console.log(response.status);
+        // if(response.status == 200) {
+        //   dispatch(resetTaskFormData());
+        //   dispatch(changeFormMode(FormMode.ADD));
+        //   dispatch(closeModal());
+        // }
       } catch(err) {
         console.error(err);
       }
@@ -113,39 +115,46 @@ const TaskModalWindow = ({ projectId, users }: TaskModalWindowProps) => {
         }
         <form onSubmit={handleFormSubmission} className='relative w-full h-full px-3 md:px-5 py-4 md:py-6 flex flex-col items-center gap-5'>
           <div className='w-full max-w-[700px] flex flex-col gap-1 text-zinc-50'>
-            <label>Task Name</label>
+            <label htmlFor="task-title">Task Title</label>
             <input
+              id='task-title'
+              type='text'
+              required
+              className='w-full px-1.5 py-1.5 sm:px-2 sm:py-2 lg:py-2.5 lg:px-2.5 rounded-md text-lg border-none focus:outline-none focus:outline-2 focus:outline-violet-700 focus-visible:border-none bg-zinc-900'
+              name="title"
+              value={taskData.title}
+              onChange={onInputChange}
+            />
+          </div>
+          <div className='w-full max-w-[700px] flex flex-col gap-1 text-zinc-50'>
+            <label htmlFor='task-content'>Task Content</label>
+            <input
+              id="task-content"
               type='text'
               className='w-full px-1.5 py-1.5 sm:px-2 sm:py-2 lg:py-2.5 lg:px-2.5 rounded-md text-lg border-none focus:outline-none focus:outline-2 focus:outline-violet-700 focus-visible:border-none bg-zinc-900'
-              name="name"
-              value={taskData.name}
+              name="content"
+              value={taskData.content}
               onChange={onInputChange}
             />
           </div>
           <DropdownInput
-            property = "estimation"
-            label="Estimation"
-            items={fibNumbers}
+            property="state"
+            label="State"
+            items={task_states}
             setFunc={setFunc}
           />
           <DropdownInput
-            property="assignedTo"
-            label='Assign to'
-            items={users}
-            setFunc={setFunc}
-          />
-          <DropdownInput
-            property="specialization"
-            label='Task Specialization'
-            items={specializations}
+            property="currAssignedUsers"
+            label="Assigned to"
+            items={projectTeam}
             setFunc={setFunc}
           />
           <button
             type="submit"  
             className={`w-full max-w-[600px] ${formMode === FormMode.EDIT ? "mt-3" : "mt-auto"} mb-3 flex justify-center items-center gap-1 bg-violet-700 py-3.5 md:py-2.5 rounded-md hover:opacity-90`}
           >
-            {formMode === FormMode.ADD && <AddTaskIcon/> }
-            {formMode === FormMode.EDIT && <EditRoundedIcon/> }
+            {formMode === FormMode.ADD && <AddTaskIcon />}
+            {formMode === FormMode.EDIT && <EditRoundedIcon />}
             <span>{formMode === "ADD" ? "Add Task" : "Edit Task"}</span>
           </button>
         </form>
@@ -154,4 +163,4 @@ const TaskModalWindow = ({ projectId, users }: TaskModalWindowProps) => {
   )
 }
 
-export default TaskModalWindow
+export default TaskModalWindow;

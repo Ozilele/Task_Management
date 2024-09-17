@@ -32,3 +32,53 @@ useEffect(() => {
       setIsLoading(false);
     });
   }, []);
+
+  async function getData() {
+    const API_URLS = [`${API_URL}/project/${id}/task`, `${API_URL}/project/${id}`];
+    const promises = API_URLS.map((apiUrl) => {
+      return axios.get(apiUrl, standard_headers)
+        .then((res) => {
+          return res.data;
+        })
+        .catch(err => {
+          console.error(err);
+          return err;
+        });
+    });
+    const allData = await Promise.all(promises);
+    allData.map((data) => {
+      if(data.projectCredentials) {
+        setUsers(data.projectCredentials.users);
+      } else {
+        const myTasks: MyTask[] = data.map((task: Task) => {
+          const date = new Date(task.createdAt);
+          const formattedDate = date.toLocaleString();
+          const myTask = {
+            id: task._id,
+            createdBy: task.createdBy,
+            dateCreated: formattedDate,
+            state: task.state,
+            projectId: task.projectId,
+            data: {
+              name: task.credentials.name,
+              estimation: task.credentials.estimation,
+              specialization: task.credentials.specialization,
+              assignedTo: task.credentials.assignedTo
+            }
+          }
+          return myTask;
+        });
+        const updatedColumns = { ...columns };
+        myTasks.forEach((task) => {
+          for(const columnId in updatedColumns) {
+            const column = updatedColumns[columnId];
+            if(column.title === task.state) {
+              column.tasks.push(task);
+              break;
+            }
+          }
+        });
+        setColumns(updatedColumns);
+      }
+    });
+  }

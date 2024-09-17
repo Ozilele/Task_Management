@@ -3,8 +3,9 @@ import axios from 'axios';
 import ArrowRightAltRoundedIcon from '@mui/icons-material/ArrowRightAltRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { useCallback, useState } from 'react';
-import { API_URL, specializations, standard_headers } from '../utils/helpers';
+import api from '../api';
+import { useCallback, useRef, useState } from 'react';
+import { specializations} from '../utils/helpers';
 import { useDispatch } from 'react-redux';
 import { closeModal } from '../features/appSlice';
 import DropdownInput from './DropdownInput';
@@ -14,9 +15,16 @@ type ProjectUser = {
   name: string,
   specialization: string
 }
+type ProjectInfo = {
+  title: string,
+  description: string,
+}
 
 function ProjectForm() {
-  const [projectName, setProjectName] = useState<string>("");
+  const [inputs, setInputs] = useState<ProjectInfo>({
+    title: "",
+    description: "",
+  });
   const [forms, setForms] = useState({
     projectNameForm: true,
     projectUsersForm: false,
@@ -35,34 +43,51 @@ function ProjectForm() {
             <CloseRoundedIcon/>
           </button>
         </div>
-        {forms.projectNameForm && <ProjectNameForm setProjectName={setProjectName} setForms={setForms}/> }
-        {forms.projectUsersForm && <UsersForm projectName={projectName} setForms={setForms}/> }
+        {forms.projectNameForm && <ProjectNameForm setInputs={setInputs} setForms={setForms} />}
+        {forms.projectUsersForm && <UsersForm values={inputs} setForms={setForms} />}
       </div>
     </div>
   )
 }
 
-function ProjectNameForm({ setProjectName, setForms }: { setProjectName: (arg: string) => void, setForms: (prev: any) => void }) {
-
+function ProjectNameForm({ setInputs, setForms }: { setInputs: (arg: ProjectInfo) => void, setForms: (prev: any) => void }) {
+  const projectNameRef = useRef<HTMLInputElement>(null);
+  const descriptionRef = useRef<HTMLInputElement>(null);
   const onNextBtnClick = () => {
     setForms({
       projectNameForm: false,
       projectUsersForm: true,
     });
   }
-
   return (
     <div className='w-full flex-1 my-2 flex flex-col gap-4'>
-      <label>Project Name</label>
+      <label htmlFor="title">Project Name</label>
       <input 
+        ref={projectNameRef}
         type="text"
+        id="title"
+        autoComplete="false"
+        required
+        maxLength={100}
         name="projectName"
-        className='w-full px-1.5 py-1.5 sm:px-2 sm:py-2 lg:py-2.5 lg:px-3 rounded-md text-lg focus:outline-none focus:outline-2 focus:outline-violet-700 bg-zinc-900'
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProjectName(e.target.value)}
-        placeholder="Project Name..."
+        className='w-full px-1.5 py-1.5 sm:px-2 sm:py-2 lg:py-2.5 lg:px-3 rounded-md text-lg focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500 bg-zinc-900'
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputs((prev) => ({...prev, title: e.target.value}))}
+        placeholder="Title..."
+        onBlur={() => projectNameRef.current?.blur()}
       />  
+      <label htmlFor="description">Project Description</label>
+      <textarea
+        ref={descriptionRef} 
+        autoComplete='false'
+        id="description"
+        rows={5}
+        className='w-full px-1.5 py-1.5 sm:px-2 sm:py-2 rounded-md bg-zinc-900 focus:outline-none focus:border-sky-500 focus:ring-2 focus:ring-sky-500'
+        placeholder='Describe...'
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInputs((prev) => ({...prev, description: e.target.value}))}
+        onBlur={() => descriptionRef.current?.blur()}
+      />
       <button 
-        className='w-full max-w-[300px] mx-auto mt-auto flex items-center justify-center gap-1 px-2.5 py-3 bg-zinc-400 rounded-md hover:opacity-90'
+        className='w-full max-w-[300px] mx-auto mt-auto flex items-center justify-center gap-1 px-2.5 py-3 bg-zinc-800 rounded-md hover:opacity-90'
         onClick={onNextBtnClick}
       >
         <span>Next</span>
@@ -72,8 +97,7 @@ function ProjectNameForm({ setProjectName, setForms }: { setProjectName: (arg: s
   );
 }
 
-function UsersForm({ projectName, setForms }: { projectName: string, setForms: (prev: any) => void }) {
-
+function UsersForm({ values, setForms }: { values: ProjectInfo, setForms: (prev: any) => void }) {
   const [userData, setUserData] = useState<ProjectUser>({
     name: "",
     specialization: "", 
@@ -87,7 +111,6 @@ function UsersForm({ projectName, setForms }: { projectName: string, setForms: (
       specialization: "",
     });
   }
-
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setUserData((prev) => ({
         ...prev,
@@ -95,7 +118,6 @@ function UsersForm({ projectName, setForms }: { projectName: string, setForms: (
       })
     );
   }
-
   const addUserToProject = () => {
     setUsers((prev) => {
       const newUser: ProjectUser = {
@@ -111,14 +133,29 @@ function UsersForm({ projectName, setForms }: { projectName: string, setForms: (
   }
 
   const handleAddProject = async () => {
-    resetInputs();
     console.log(users);
-    const response = await axios.post(`${API_URL}/project`, {
-      name: projectName,  
-      users: users
-    }, standard_headers);
-    if(response.status === 201) {
-      dispatch(closeModal());
+    try {
+      let response = await api.post("/api/admin/projects/", {
+        title: values.title,
+        description: values.description,
+        team: users,
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      if(response.status === 201) {
+        console.log(response.data);
+        closeModal();
+      }
+    } catch(err) {
+      if(axios.isAxiosError(err)) {
+        console.log(err.response);
+      } else {
+        console.error(err);
+      }
+    } finally {
+      resetInputs();
     }
   }
 
@@ -132,12 +169,13 @@ function UsersForm({ projectName, setForms }: { projectName: string, setForms: (
   return (
     <div className='w-full h-full flex flex-col gap-4 lg:gap-6'>
       <div className='w-full max-w-[450px] mt-2 mx-auto flex flex-col gap-1'>
-        <label className='text-lg'>Username</label>
+        <label htmlFor='username' className='text-lg'>Username</label>
         <input
-          className='px-1.5 py-1.5 rounded-md text-xl focus:outline-none focus:outline-2 focus:outline-violet-700 bg-zinc-900' 
           type='text'
+          id="username"
           name="name"
           autoComplete='off'
+          className='px-1.5 py-1.5 rounded-md text-xl focus:outline-none focus:border-violet-700 focus:ring-2 focus:ring-violet-700 bg-zinc-900' 
           value={userData.name}
           onChange={onInputChange}
         />

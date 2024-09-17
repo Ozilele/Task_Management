@@ -1,5 +1,9 @@
-import { Estimation, Specialization } from "../types/project-types";
+import { Specialization, TaskState } from "../types/project-types";
 import { v4 as uuidv4 } from 'uuid';
+import { CurrViewOption } from "../types/project-types";
+import ListRoundedIcon from '@mui/icons-material/ListRounded';
+import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
+import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 
 export const backend_url = "http://localhost:4444";
 
@@ -12,15 +16,12 @@ export const standard_headers = {
   }
 }
 
-export const fibNumbers = [
-  Estimation.ONE,
-  Estimation.TWO,
-  Estimation.THREE,
-  Estimation.FIVE,
-  Estimation.EIGHT,
-  Estimation.THIRTEEN,
-  Estimation.TWENTY_ONE
-];
+export const task_states = [
+  TaskState.TO_DO,
+  TaskState.IN_PROGRESS,
+  TaskState.UNDER_REVIEW,
+  TaskState.COMPLETED
+]
 
 export const specializations = [
   Specialization.FRONTEND,
@@ -31,18 +32,52 @@ export const specializations = [
 
 export const my_columns = {
   [uuidv4()]: {
-    title: "NOT_ASSIGNED",
+    title: "To Do",
     tasks: []
   },
   [uuidv4()]: {
-    title: "IN_PROGRESS",
+    title: "In Progress",
     tasks: [],
   },
   [uuidv4()]: {
-    title: "CLOSED",
+    title: "Under Review",
+    tasks: [],
+  },
+  [uuidv4()]: {
+    title: "Completed",
     tasks: [],
   }
 }
+
+export const tasksOption = [
+  {
+    name: "All Tasks",
+    route: "/projects/tasks/"
+  },
+  {
+    name: "My Tasks",
+    route: "/projects/assigned-tasks/",
+  },
+  {
+    name: "Created",
+    route: "/projects/created/"
+  }
+]
+
+export const viewOption: CurrViewOption[] = [
+  {
+    name: "Grid",
+    icon: GridViewOutlinedIcon,
+  },
+  {
+    name: "List",
+    icon: ListRoundedIcon,
+  },
+  {
+    name: "Board",
+    icon: DashboardRoundedIcon,
+  }
+]
 
 export const formatDate = (dateString: string) => {
   const dateObj = new Date(dateString);
@@ -54,6 +89,8 @@ export const formatDate = (dateString: string) => {
   const formattedDate = `${year}-${month}-${day}-${hours}:${minutes}`;
   return formattedDate
 }
+
+export const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 const common_input_style = "w-full px-1.5 sm:px-2 py-1.5 sm:py-2 lg:py-2.5 lg:px-2.5 rounded-md text-lg"
 // invalid:border-red-500 invalid:text-red-600 focus:invalid:border-red-500 focus:invalid:ring-red-500

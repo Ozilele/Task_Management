@@ -23,19 +23,19 @@ export const appSlice = createSlice({
     toggleModal: (state, action: PayloadAction<boolean>) => {
       state.isModalOpen = action.payload;
     },
-    closeModal: (state) => {
+    closeModal: (state) => { // close modal window
       state.isModalOpen = false;
     },
-    openModal: (state) => {
+    openModal: (state) => { // open modal window
       state.isModalOpen = true;
     },
-    changeFormMode: (state, action: PayloadAction<FormMode>) => {
+    changeFormMode: (state, action: PayloadAction<FormMode>) => { // change modal view
       state.formMode = action.payload;
     },
-    setTaskFormData: (state, action: PayloadAction<TaskFormData | null>) => {
+    setTaskFormData: (state, action: PayloadAction<TaskFormData | null>) => { // set modal data
       state.taskFormData = action.payload;
     },
-    resetTaskFormData: (state) => {
+    resetTaskFormData: (state) => { // reset modal values
       state.taskFormData = null;
     },
     setAppTheme: (state, action: PayloadAction<AppTheme>) => {

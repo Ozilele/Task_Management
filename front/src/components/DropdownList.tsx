@@ -1,20 +1,18 @@
 import { Avatar } from "@mui/material"
-import { Estimation, Specialization, User } from "../types/project-types"
+import { TaskState, User } from "../types/project-types"
 
 type DropdownListProps = {
   value: string | User,
   style?: React.CSSProperties,
   setFunc: (arg: string | User) => void,
-  items: Estimation[] | User[] | Specialization[]
+  items: User[] | TaskState[]
 }
 
 const DropdownList = ({ value, style, setFunc, items }: DropdownListProps) => {
-
   const onItemClick = (e: React.MouseEvent<HTMLLIElement>, item: string) => {
     // e.stopPropagation();
     setFunc(item);
   }
-
   const isOptionSelected = (item: string | User) => {
     return item === value;
   }
@@ -24,13 +22,13 @@ const DropdownList = ({ value, style, setFunc, items }: DropdownListProps) => {
       <ul className='flex flex-col gap-2 list-none px-2 mb-3.5 mt-1.5 min-h-1/2'>
         {items.map((item, i) => {
           if(typeof item === "string") {
-            const spec = item[0] + item.slice(1).toLowerCase();
             return (
               <li 
                 key={i} 
                 onClick={(e) => onItemClick(e, item)} 
-                className={`w-full py-1  px-1 border-b-2 border-stone-700 hover:bg-slate-300 cursor-pointer ${isOptionSelected(item) ? "bg-registerBlue" : ""}`}>
-                  {spec}
+                className={`w-full py-1  px-1 border-b-2 border-stone-700 hover:bg-slate-300 cursor-pointer ${isOptionSelected(item) ? "bg-registerBlue" : ""}`}
+              >
+                {item}
               </li>
             )
           } else if(typeof item === "object") {

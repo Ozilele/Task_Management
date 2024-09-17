@@ -2,7 +2,7 @@ import { memo, useEffect, useState } from 'react';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import DropdownList from './DropdownList';
-import { Estimation, Specialization, User } from '../types/project-types';
+import { TaskState, User } from '../types/project-types';
 import { useSelector } from 'react-redux';
 import { selectTaskFormData } from '../features/appSlice';
 
@@ -10,27 +10,26 @@ type DropdownInputProps = {
   property: string,
   style?: React.CSSProperties, 
   label: string,
-  items: Estimation[] | Specialization[] | User[],
+  items: User[] | TaskState[],
   setFunc: (property: string, item: string | User) => void,
 }
 
 function DropdownInput({ property, style, label, items, setFunc }: DropdownInputProps) {
-
   const [value, setValue] = useState<string | User>("");
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const taskFormData = useSelector(selectTaskFormData);
+  const savedTaskData = useSelector(selectTaskFormData);
 
   useEffect(() => {
-    if(taskFormData != null) {
-      if(property === "assignedTo") {
+    if(savedTaskData != null) {
+      if(property === "currAssignedUsers") { // currAssignedUsers
         const usersList = items as User[];
-        const foundUser = usersList.find((user) => user.id === taskFormData[property].userId);
+        const foundUser = usersList.find((user) => user.id === savedTaskData[property].id);
         if(foundUser) {
           setValue(foundUser.name);
           setFunc(property, foundUser);
         }
-      } else {
-        const providedData = taskFormData[property];
+      } else { // state for example
+        const providedData = savedTaskData[property];
         setValue(providedData);
         setFunc(property, providedData);
       }
@@ -52,8 +51,8 @@ function DropdownInput({ property, style, label, items, setFunc }: DropdownInput
           name={property}
           value={typeof(value) === "object" ? value.name : value}
         />
-        {dropdownOpen && <ExpandMoreIcon className='absolute right-1 m-auto'/> }
-        {!dropdownOpen && <ExpandLessIcon className='absolute right-1 m-auto'/> }
+        {dropdownOpen && <ExpandMoreIcon className='absolute right-1 m-auto' />}
+        {!dropdownOpen && <ExpandLessIcon className='absolute right-1 m-auto' />}
         {dropdownOpen && 
           <DropdownList
             style={{
@@ -62,7 +61,7 @@ function DropdownInput({ property, style, label, items, setFunc }: DropdownInput
             }}  
             setFunc={(item) => {
               if(typeof item === "string") {
-                setValue(item[0] + item.slice(1).toLowerCase());
+                setValue(item);
               }
               else if(typeof item === "object") {
                 setValue(item.name);

@@ -1,3 +1,4 @@
+
 export enum Specialization {
   FRONTEND = "FRONTEND",
   BACKEND = "BACKEND",
@@ -6,21 +7,11 @@ export enum Specialization {
   NONE = "",
 }
 
-export enum Estimation {
-  ONE = "ONE",
-  TWO = "TWO",
-  THREE = "THREE",
-  FIVE = "FIVE",
-  EIGHT = "EIGHT",
-  THIRTEEN = "THIRTEEN",
-  TWENTY_ONE = "TWENTY_ONE"
-}
-
 export enum TaskState {
-  NOT_ASSIGNED = "NOT_ASSIGNED",
-  IN_PROGRESS = "IN_PROGRESS",
-  CLOSED = "CLOSED",
-  DELETED = "DELETED"
+  TO_DO = "To Do",
+  IN_PROGRESS = "In Progress",
+  UNDER_REVIEW = "Under Review",
+  COMPLETED = "Completed"
 }
 
 export enum FormMode {
@@ -83,68 +74,27 @@ export interface TaskCredentials {
 }
 
 export interface Task {
-  _id: string,
-  projectId: string,
-  credentials: TaskCredentials,
+  id: number,
+  title: string,
+  content: string,
   state: string,
-  createdAt: number,
-  createdBy: {
-    userId: string
-  },
+  author: number,
+  assigned_to: User[],
+  project: number
 }
 
-export interface MyTask {
-  id: string,
-  createdBy: {
-    userId: string
-  },
-  dateCreated: string,
-  state: string,
-  projectId: string,
-  data: {
-    name: string,
-    estimation: string,
-    specialization: string,
-    assignedTo: {
-      userId: string,
-    }
-  }
-}
+export type CurrTaskOption = "All Tasks" | "My Tasks" | "Created";
 
-export type TaskItem = {
-  name: string,
-  estimation: string,
-  specialization: string,
-  assignedTo: {
-    userId: string,
-  },
-  dateCreated: string,
-  createdBy: {
-    userId: string
-  }
-}
-
-export type TaskData = {
-  name: string,
-  estimation: string,
-  specialization: string,
-  assignedTo: {
-    id: string,
-    name: string,
-    specialization: Specialization
-  }
+export type CurrViewOption = {
+  name: "Grid" | "List" | "Board",
+  icon: React.ElementType,
 }
 
 export type TaskFormData = {
-  name: string,
-  taskId?: string,
-  estimation: string,
-  specialization: string,
-  assignedTo: {
-    userId: string,
-  },
-  dateCreated: string,
-  createdBy: {
-    userId: string
-  }
+  task_id: number, // task_id
+  title: string,
+  content: string,
+  state: string,
+  project_id: number // project id
+  currAssignedUsers: User[],
 }

@@ -1,12 +1,12 @@
 import { useState } from "react"
 import api from "../api"
+import axios from "axios"
 import { AuthFormInputsState, AuthInputElement, AuthFormErrors } from "../types/project-types"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"
 import { useNavigate } from "react-router-dom"
 import { validatePassword, validateEmailAddress } from "../utils/helpers"
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-
 type AuthFormProps = {
   method: string;
   inputs: AuthInputElement[],
@@ -25,7 +25,6 @@ const initialErrors = {
 }
 
 const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
-  
   const [input_values, setInputs] = useState<AuthFormInputsState>(initialInputState);
   const [errors, setErrors] = useState<AuthFormErrors>(initialErrors);
   const navigate = useNavigate();
@@ -40,10 +39,8 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
     });
   }
 
-  const handleSubmit = async (event: React.ChangeEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const validateForm = () => {
     const curr_errors = [];
-    let response;
     if(!validateEmailAddress(input_values.email)) {
       curr_errors.push("emailError");
       setErrors((prev) => ({
@@ -65,11 +62,19 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
         repeatedPasswordError: "Passwords do not match"
       }));
     }
-    if(curr_errors.length > 0) {
+    if(curr_errors.length > 0) { // some error occurred
       setInputs(initialInputState);
+      return false;
+    }
+    return true;
+  }
+
+  const handleSubmit = async (event: React.ChangeEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    let response;
+    if(!validateForm()) {
       return;
     }
-
     if(method === "login") {
       try {
         response = await api.post(route, {
@@ -84,23 +89,28 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
         localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
         navigate("/");
       } catch(error) {
-        if(error.response.status === 401) { // Unathorized
-          const error_msg = error.response.data.detail;
-          toast.error("Unauthorized: " + error_msg, {
-            position: "top-center",
-            autoClose: 5000,
-            theme: "dark",
-            closeOnClick: true,
-            pauseOnHover: true,
-          }); 
-        } else { // Server err, invalid connection
-          toast.error("An unexpected error occurred. Please check your internet connection and try again later.", {
-            position: "top-center",
-            autoClose: 5000,
-            theme: "dark",
-            closeOnClick: true,
-            pauseOnHover: true,
-          });
+        if(axios.isAxiosError(error)) {
+          if(error.response?.status === 401) { // Unathorized
+            const error_msg = error.response.data.detail;
+            toast.error("Unauthorized: " + error_msg, {
+              position: "top-center",
+              autoClose: 5000,
+              theme: "dark",
+              closeOnClick: true,
+              pauseOnHover: true,
+            }); 
+          }
+          else { // Server err, invalid connection
+            toast.error(`An unexpected(${error.response?.status}) error occurred. Please check your internet connection and try again later.`, {
+              position: "top-center",
+              autoClose: 5000,
+              theme: "dark",
+              closeOnClick: true,
+              pauseOnHover: true,
+            });
+          }
+        } else {
+          console.error(error);
         }
       } finally {
         setInputs(initialInputState);
@@ -118,7 +128,7 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
         });
         if(response.status === 201) {
           setInputs(initialInputState);
-          toast.success("Registration successful! Please check your email to confirm your account.", {
+          toast.success("Registration successful! Please check your email to confirm your e-mail address.", {
             position: "top-center",
             autoClose: 5000,
             theme: "dark",
@@ -135,7 +145,11 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
           }, 5000);
         }
       } catch(error) {
-        console.log(error.response);
+        if(axios.isAxiosError(error)) {
+          console.log(error.response);
+        } else {
+          console.error(error);
+        }
       } finally {
         setInputs(initialInputState);
       }
@@ -168,9 +182,17 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
                           emailError: ""
                         }));
                       }
+                    } else {
+                      if(input.error_name !== undefined && errors[input?.error_name] !== "") {
+                        const errorName = input.error_name
+                        setErrors((prev) => ({
+                          ...prev,
+                          [errorName]: ""
+                        }));
+                      }
                     }
                   }}
-                  className={`${input["style"]} focus:input-custom-focus ${isEmail && "peer"}`}
+                  className={`${input["style"]}  ${isEmail && "peer"} focus:input-custom-focus`}
                   type={input["type"]}
                   name={input["name"]}
                   required

@@ -1,83 +1,106 @@
 import axios from 'axios';
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
-import { API_URL, my_columns, standard_headers } from '../utils/helpers';
-import { MyTask, Task, User } from '../types/project-types';
+import { my_columns, tasksOption, viewOption } from '../utils/helpers';
+import { CurrTaskOption, Task, User } from '../types/project-types';
 import { DragDropContext } from 'react-beautiful-dnd';
 import AddIcon from '@mui/icons-material/Add';
 import TaskModalWindow from '../components/TaskModalWindow';
+import Column from '../components/Column';
+import api from '../api';
 import { motion } from 'framer-motion';
-import TableColumn from '../components/TableColumn';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { selectModalOpen, toggleModal } from '../features/appSlice';
-import { useDispatch } from 'react-redux';
+
+type SelectedView = "Grid" | "List" | "Board"
+type SelectedOptions = {
+  taskOption: CurrTaskOption,
+  viewOption: SelectedView
+}
 
 const Project = () => {
-  const { id }= useParams(); // getting id of the project
+  const { id } = useParams();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [columns, setColumns] = useState(my_columns);
-  const modalOpen = useSelector(selectModalOpen);
-  const dispatch = useDispatch();
-
   const [users, setUsers] = useState<User[]>([]);
-  
-  console.log(columns);
-  console.log(users);
+  const [selectedOptions, setSelectedOptions] = useState<SelectedOptions>({
+    taskOption: "All Tasks",
+    viewOption: "Grid"
+  });
+  const dispatch = useDispatch();
+  const isModalOpen = useSelector(selectModalOpen);
+
+  const projectID = parseInt(id[id?.length - 1]);
 
   useEffect(() => {
-    setIsLoading(true);
-    async function getData() {
-      const API_URLS = [`${API_URL}/project/${id}/task`, `${API_URL}/project/${id}`];
-      const promises = API_URLS.map((apiUrl) => {
-        return axios.get(apiUrl, standard_headers)
-          .then((res) => {
-            return res.data;
-          })
-          .catch(err => {
-            console.error(err);
-            return err;
-          });
-      });
-      const allData = await Promise.all(promises);
-      allData.map((data) => {
-        if(data.projectCredentials) {
-          setUsers(data.projectCredentials.users);
-        } else {
-          const myTasks: MyTask[] = data.map((task: Task) => {
-            const date = new Date(task.createdAt);
-            const formattedDate = date.toLocaleString();
-            const myTask = {
-              id: task._id,
-              createdBy: task.createdBy,
-              dateCreated: formattedDate,
-              state: task.state,
-              projectId: task.projectId,
-              data: {
-                name: task.credentials.name,
-                estimation: task.credentials.estimation,
-                specialization: task.credentials.specialization,
-                assignedTo: task.credentials.assignedTo
-              }
-            }
-            return myTask;
-          });
-          const updatedColumns = { ...columns };
-          myTasks.forEach((task) => {
-            for(const columnId in updatedColumns) {
-              const column = updatedColumns[columnId];
-              if(column.title === task.state) {
-                column.tasks.push(task);
-                break;
-              }
-            }
-          });
-          setColumns(updatedColumns);
-        }
-      });
-    }
-    getData();
+    // projects/<int:project_id>/tasks/ -all tasks
+    // projects/<int:project_id>/assigned-tasks/ - assigned tasks to user
+    // projects/<int:project_id>/created/ - created tasks by user
+    getTasks(`/projects/${projectID}/tasks/`);
   }, []);
 
+  const insertTasksInColumn = (tasks: Task[]) => {
+    const updatedColumns = { ...columns };
+    tasks.forEach((task: Task) => {
+      for(const columnId in updatedColumns) {
+        const column = updatedColumns[columnId];
+        if(column.title === task.state) {
+          column.tasks.push(task);
+          break;
+        }
+      }
+    });
+    setColumns(updatedColumns);
+  }
+  // /api/${projectID}/tasks/
+  const getTasks = async (apiRoute: string) => {
+    setIsLoading(true);
+    try {
+      let response = await api.get(`/api${apiRoute}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
+      console.log(response.data);
+      if(response.status === 200) { // get assigned tasks 
+        const assignedTasks: Task[] = response.data.map((task: Task) => {
+          const assigned_Task: Task = {
+            id: task.id,
+            title: task.title,
+            content: task.content,
+            state: task.state,
+            author: task.author,
+            assigned_to: task.assigned_to,
+            project: task.project
+          }
+          return assigned_Task;
+        });
+        insertTasksInColumn(assignedTasks);
+      }
+    } catch(error) {
+      if(axios.isAxiosError(error)) {
+        console.log(error.response);
+      } else {
+        console.error(error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }
+  
+  const onTaskChange = (task_option: string, api_route: string) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      taskOption: task_option as CurrTaskOption
+    }));
+    getTasks(api_route);
+  }
+  const onViewChange = (view_option: string) => {
+    setSelectedOptions((prev) => ({
+      ...prev,
+      viewOption: view_option as SelectedView
+    }));
+  }
 
   const handleOnDragEnd = (result) => {
     const draggableId = result.draggableId;
@@ -123,14 +146,38 @@ const Project = () => {
   }
 
   return (
-    <div className='relative w-full max-w-1200 mx-auto h-full mt-3 px-3'>
-      <div className='mt-10 w-full max-w-24 px-1.5 flex items-center gap-2'>
-        <button className='px-2.5 py-2.5 hover:opacity-80 bg-projectBg rounded-md'>All Tasks</button>
-        <button className='px-2.5 py-2.5 hover:opacity-80 text-gray-300 bg-projectBg rounded-md'>My Tasks</button>
+    <div className='relative w-full max-w-7xl mx-auto h-full mt-3 px-3'>
+      <div className='mt-10 w-full max-w-24 px-1.5 flex items-center justify-between'>
+        <div className='flex items-center gap-2'>
+          {tasksOption.map((task, i) => {
+            return (
+              <button
+                key={i}
+                onClick={(_) => onTaskChange(task.name, task.route)} 
+                className={`px-2.5 py-2.5 rounded-md ${selectedOptions.taskOption === task.name ? "bg-taskSelected text-slate-100" : "bg-projectBg text-gray-300"} transition-opacity duration-300 hover:opacity-80`}>
+                {task.name}
+              </button>
+            )
+          })}
+        </div>
+        <div className='flex items-center gap-1'>
+          {viewOption.map((view, i) => {
+            return (
+              <button
+                key={i}
+                onClick={(_) => onViewChange(view.name)}
+                className={`${selectedOptions.viewOption === view.name ? "bg-registerBlue text-slate-200": "bg-zinc-950"} flex items-center gap-1 px-2 py-1.5 rounded-md transition-opacity duration-300 hover:opacity-80`}
+              >
+                {view.icon && <view.icon/>}
+                <span>{view.name}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
       <motion.button
         whileHover={{
-          scale: 1.1,
+          scale: 1.05,
         }}
         whileTap={{ scale: 0.9 }}
         onClick={() => dispatch(toggleModal(true))}
@@ -138,11 +185,13 @@ const Project = () => {
       >
         <AddIcon/>
       </motion.button>
-      <div className='w-full max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 my-12 px-1'>
-        <DragDropContext onDragEnd={result => handleOnDragEnd(result)}>
+      <div className='w-full max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 my-12 px-1'>
+        <DragDropContext 
+          onDragEnd={result => handleOnDragEnd(result)}
+        >
           {Object.entries(columns).map(([id, column]) => {
             return (
-              <TableColumn
+              <Column
                 key={id}
                 id={id}
                 title={column.title}
@@ -152,7 +201,7 @@ const Project = () => {
           })}
         </DragDropContext>
       </div>
-      {modalOpen && <TaskModalWindow projectId={id} users={users}/>}
+      {isModalOpen && <TaskModalWindow projectId={projectID} projectTeam={users}/>}
     </div>
   )
 }
