@@ -4,7 +4,7 @@ Project Management Application for viewing projects, tasks, assigning users to t
 
 ## Stack: 
 On Frontend:
-* React, Typescript
+* React, Typescript, Tailwind CSS
 * [react-beautiful-dnd](https://github.com/atlassian/react-beautiful-dnd) for drag and drop functionality
 * [Material UI](https://mui.com/material-ui/) for icons and components
 * [Axios](https://github.com/axios/axios) for api calls and implementing interceptors
@@ -12,6 +12,6 @@ On Frontend:
 
 On Backend:
 * Python, Django framework, Django Rest Framework
-* Embeedded SQLite Local Database for users, tasks, projects
+* Embedded SQLite Local Database for users, tasks, projects
 * JWT Authorization with access and refresh tokens implementation
 * Securing specific endpoints from unauthorized access 
