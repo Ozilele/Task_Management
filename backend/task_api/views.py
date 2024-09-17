@@ -8,9 +8,8 @@ class AssignedProjectList(generics.ListAPIView):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self): # get projects for which user is assigned to
-        user = self.request.user
-        # print(user)
+    def get_queryset(self): # get all projects in which user is assigned to
+        user = self.request.user # adasko to 14 id
         return user.assigned_projects.all()
         # return Project.objects.filter(team=user)
 
@@ -53,6 +52,20 @@ class AssignedTaskList(generics.ListAPIView):
         else:
             return ValidationError('Project ID is required.')
 
+class CreatedTaskList(generics.ListAPIView):
+    serializer_class = TaskSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        project = self.kwargs.get('project_id')
+        if project is not None:
+            user = self.request.user
+            if user is None:
+                return ValidationError('User is required to query results.')
+            return Task.objects.filter(project=project, author=user)
+        else:
+            return ValidationError("Project ID is required.")
+
 class TaskItem(generics.RetrieveAPIView):
     serializer_class = TaskSerializer
     permission_classes = [IsAuthenticated]
@@ -86,5 +99,12 @@ class TaskUpdate(generics.UpdateAPIView):
     def get_queryset(self): # get all tasks for given project
         project = self.kwargs.get('project_id')
         return Task.objects.filter(project=project)
-
+    
+    def perform_update(self, serializer):
+        project = self.kwargs.get('project_id')
+        if serializer.is_valid() and project is not None:
+            serializer.save(project=project)    
+        else:
+            print(serializer.errors)
+            raise ValidationError("Project ID is required")
     

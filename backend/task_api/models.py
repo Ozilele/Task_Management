@@ -13,10 +13,10 @@ class Project(models.Model):
         return self.title
 
 task_state = (
-    (1, "NOT_ASSIGNED"),
-    (2, "IN_PROGRESS"),
-    (3, "ON_HOLD"),
-    (4, "COMPLETED"),
+    (1, "To Do"),
+    (2, "In Progress"),
+    (3, "Under Review"),
+    (4, "Completed"),
 )
 
 class Task(models.Model):
