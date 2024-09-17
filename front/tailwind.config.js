@@ -15,6 +15,10 @@ export default {
         modalBg: "rgba(0, 0, 0, 0.6)",
         projectBg: "#373737",
         registerBlue: "#83A2FF",
+        customBlack: "rgba(31, 33, 36, 1)",
+        taskSelected: "#576AEA",
+        blacking: "#1F2124",
+        taskFocus: "#303663"
       },
       minHeight: {
         '1/2': '100px'
