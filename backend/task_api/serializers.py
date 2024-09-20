@@ -10,7 +10,7 @@ class TaskSerializer(serializers.ModelSerializer):
     def create(self, validated_data): # creates django object model from request's data
         assigned_users = validated_data.pop('assigned_to')
         instance = Task.objects.create(**validated_data)
-        instance.assigned_to = assigned_users
+        instance.assigned_to.set(assigned_users)
         return instance
     
     def to_representation(self, instance):
@@ -33,7 +33,5 @@ class ProjectSerializer(serializers.ModelSerializer):
     
     def to_representation(self, instance): # TO JSON
         obj = super().to_representation(instance)
-        # obj.pop("last_modified")
-        # obj.pop("created_at")
         return obj
 
