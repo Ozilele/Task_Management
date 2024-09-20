@@ -20,14 +20,14 @@ function DropdownInput({ property, style, label, items, setFunc }: DropdownInput
   const savedTaskData = useSelector(selectTaskFormData);
 
   useEffect(() => {
-    if(savedTaskData != null) {
+    if(savedTaskData != null) { // EDIT MODE
       if(property === "currAssignedUsers") { // currAssignedUsers
         const usersList = items as User[];
-        const foundUser = usersList.find((user) => user.id === savedTaskData[property].id);
-        if(foundUser) {
-          setValue(foundUser.name);
-          setFunc(property, foundUser);
-        }
+        // const foundUser = usersList.find((user) => user.id === savedTaskData[property].id);
+        // if(foundUser) {
+        //   setValue(foundUser.username);
+        //   setFunc(property, foundUser);
+        // }
       } else { // state for example
         const providedData = savedTaskData[property];
         setValue(providedData);
@@ -49,12 +49,13 @@ function DropdownInput({ property, style, label, items, setFunc }: DropdownInput
           readOnly
           className='w-full px-1.5 py-1.5 sm:px-2 sm:py-2 lg:py-2.5 lg:px-2.5 rounded-t-md text-lg focus:outline-none focus:outline-2 focus:outline-violet-700 bg-zinc-900'
           name={property}
-          value={typeof(value) === "object" ? value.name : value}
+          value={typeof(value) === "object" ? value.username : value}
         />
         {dropdownOpen && <ExpandMoreIcon className='absolute right-1 m-auto' />}
         {!dropdownOpen && <ExpandLessIcon className='absolute right-1 m-auto' />}
         {dropdownOpen && 
           <DropdownList
+            value={value}
             style={{
               backgroundColor: "#18181B",
               borderColor: 'whitesmoke'
@@ -64,7 +65,7 @@ function DropdownInput({ property, style, label, items, setFunc }: DropdownInput
                 setValue(item);
               }
               else if(typeof item === "object") {
-                setValue(item.name);
+                setValue(item.username);
               }
               setFunc(property, item);
             }} 

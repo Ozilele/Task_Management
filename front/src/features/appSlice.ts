@@ -7,6 +7,7 @@ interface AppState {
   currTheme: AppTheme
   taskFormData: TaskFormData | null,
   formMode: FormMode,
+  dataToBeReload: boolean,
 }
 
 const initialState: AppState = {
@@ -14,6 +15,7 @@ const initialState: AppState = {
   currTheme: AppTheme.DARK,
   taskFormData: null,
   formMode: FormMode.ADD,
+  dataToBeReload: false,
 }
 
 export const appSlice = createSlice({
@@ -40,14 +42,21 @@ export const appSlice = createSlice({
     },
     setAppTheme: (state, action: PayloadAction<AppTheme>) => {
       state.currTheme = action.payload;
+    },
+    reloadData: (state) => {
+      state.dataToBeReload = true
+    },
+    resetReloadData: (state) => {
+      state.dataToBeReload = false
     }
   }
 });
 
-export const { toggleModal, closeModal, openModal, changeFormMode, setTaskFormData, resetTaskFormData, setAppTheme } = appSlice.actions;
+export const { toggleModal, closeModal, openModal, changeFormMode, setTaskFormData, resetTaskFormData, setAppTheme, reloadData, resetReloadData } = appSlice.actions;
 export const selectTaskFormData = (state: RootState) => state.app.taskFormData;
 export const selectAppTheme = (state: RootState) => state.app.currTheme;
 export const selectModalOpen = (state: RootState) => state.app.isModalOpen;
 export const selectFormMode = (state: RootState) => state.app.formMode;
+export const selectDataToBeReload = (state: RootState) => state.app.dataToBeReload;
 
 export default appSlice.reducer;

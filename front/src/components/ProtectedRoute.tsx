@@ -45,7 +45,6 @@ const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         const tokenExpiration = decoded.exp;
         const now = Date.now() / 1000 // to seconds
         if(tokenExpiration! < now) {
-            console.log("Getting new access token by refresh token...");
             await refreshToken();
         } else {
             setIsAuthorized(true);

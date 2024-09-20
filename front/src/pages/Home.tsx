@@ -95,12 +95,13 @@ const Home = () => {
         <input
           type='text'
           name='project'
+          autoComplete='false'
           value={projectInput.project}
           className='w-full border-none outline-none bg-transparent text-lg'
           onChange={onInputChange}
           placeholder='Project Search...'
         />
-        <SearchOutlinedIcon/>
+        <SearchOutlinedIcon className='!cursor-pointer'/>
       </div>
       <section className='w-full h-full my-12 md:my-8 mx-auto flex flex-col justify-center items-center'>
         <div className='relative w-full mb-8 sm:mb-10 flex justify-center'>

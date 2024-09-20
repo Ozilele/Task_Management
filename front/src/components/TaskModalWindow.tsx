@@ -1,20 +1,22 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { FormMode, Specialization, TaskFormData, User } from '../types/project-types';
-import { API_URL, specializations, standard_headers, task_states } from '../utils/helpers';
+import { FormMode, TaskFormData, User } from '../types/project-types';
+import { task_states } from '../utils/helpers';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useDispatch } from 'react-redux';
-import { changeFormMode, closeModal, resetTaskFormData, selectFormMode, selectTaskFormData } from '../features/appSlice';
+import { changeFormMode, closeModal, reloadData, resetTaskFormData, selectFormMode, selectTaskFormData } from '../features/appSlice';
 import { useSelector } from 'react-redux';
+import 'react-toastify/dist/ReactToastify.css';
 import Overlay from './Overlay';
 import DropdownInput from './DropdownInput';
 import api from '../api';
+import { ToastContainer, toast, ToastOptions } from 'react-toastify';
+import axios from 'axios';
 
 type TaskModalWindowProps = {
   projectId: number,
   projectTeam: User[],
 }
-
 type TaskData = {
   title: string,
   content: string,
@@ -22,17 +24,25 @@ type TaskData = {
   currAssignedUsers: User[] | null;
 }
 
+const initialTaskDataState = {
+  title: "",
+  content: "",
+  state: "",
+  currAssignedUsers: null,
+}
+const toast_config: ToastOptions = {
+  position: "top-right",
+  autoClose: 3000,
+  theme: "dark",
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
+}
+
 const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
-  const [editTaskInfo, setEditTaskInfo] = useState({
-    author: "",
-    dateCreated: "",
-  });
-  const [taskData, setTaskData] = useState<TaskData>({
-    title: "",
-    content: "",
-    state: "",
-    currAssignedUsers: null,
-  }); 
+  const [taskData, setTaskData] = useState<TaskData>(initialTaskDataState); 
   const formMode = useSelector(selectFormMode);
   const savedTaskData = useSelector(selectTaskFormData);
   const dispatch = useDispatch();
@@ -45,10 +55,6 @@ const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
         state: savedTaskData!.state,
         currAssignedUsers: savedTaskData!.currAssignedUsers
       });
-      // setEditTaskInfo({
-      //   author: savedTaskData.createdBy.userId,
-      //   dateCreated: savedTaskData.dateCreated,
-      // });
     }
   }, []);
 
@@ -63,22 +69,31 @@ const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
     event.preventDefault();
     if(formMode === FormMode.ADD) { // adding task
       try {
-        let response = await api.post(`/projects/${projectId}/tasks/`, {
+        let response = await api.post(`/api/projects/${projectId}/tasks/`, {
           title: taskData.title,
           content: taskData.content,
           state: taskData.state,
-          assigned_to: taskData.currAssignedUsers,
+          // assigned_to: taskData.currAssignedUsers!.map((user) => user.id),
+          assigned_to: [taskData.currAssignedUsers!.id],
         });
-        console.log(response.data);
         if(response.status === 201) {
           dispatch(closeModal());
+          toast.success("Task added successfully!", toast_config);
+          dispatch(reloadData());
+        } else {
+          setTaskData(initialTaskDataState);
+          toast.error("Error adding task", toast_config);
         }
       } catch(err) {
-        console.error(err);
+        if(axios.isAxiosError(err)) {
+          console.log(err.response);
+        } else {
+          console.error(err);
+        }
       }
     } else if(formMode === FormMode.EDIT) { // editing task
       try {
-        let response = await api.put(`/api/projects/${projectId}/tasks/update/${savedTaskData?.task_id}/`, {
+        let response = await api.put(`/api/projects/${projectId}/tasks/${savedTaskData?.task_id}/`, {
           title: taskData.title,
           content: taskData.content,
           state: taskData.state,
@@ -107,12 +122,12 @@ const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
   return (
     <Overlay>
       <div onClick={(e) => e.stopPropagation()} className={`w-11/12 max-w-[800px] ${formMode == "EDIT" ? "h-auto" : "h-3/5" } bg-neutral-700 rounded-md`}>
-        {formMode === FormMode.EDIT &&
+        {/* {formMode === FormMode.EDIT &&
           <div className='w-full px-3 py-2 flex flex-col items-end'>
             <span className='text-sm md:text-base'>Author: {editTaskInfo.author}</span>
             <span className='text-sm md:text-base'>Created: {editTaskInfo.dateCreated}</span>
           </div>
-        }
+        } */}
         <form onSubmit={handleFormSubmission} className='relative w-full h-full px-3 md:px-5 py-4 md:py-6 flex flex-col items-center gap-5'>
           <div className='w-full max-w-[700px] flex flex-col gap-1 text-zinc-50'>
             <label htmlFor="task-title">Task Title</label>

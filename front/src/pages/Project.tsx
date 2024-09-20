@@ -10,7 +10,8 @@ import Column from '../components/Column';
 import api from '../api';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectModalOpen, toggleModal } from '../features/appSlice';
+import { selectDataToBeReload, selectModalOpen, toggleModal } from '../features/appSlice';
+import { ToastContainer } from 'react-toastify';
 
 type SelectedView = "Grid" | "List" | "Board"
 type SelectedOptions = {
@@ -29,15 +30,15 @@ const Project = () => {
   });
   const dispatch = useDispatch();
   const isModalOpen = useSelector(selectModalOpen);
-
+  const dataToReload = useSelector(selectDataToBeReload);
   const projectID = parseInt(id[id?.length - 1]);
 
   useEffect(() => {
     // projects/<int:project_id>/tasks/ -all tasks
     // projects/<int:project_id>/assigned-tasks/ - assigned tasks to user
-    // projects/<int:project_id>/created/ - created tasks by user
+    // projects/<int:project_id>/created-tasks/ - created tasks by user
     getTasks(`/projects/${projectID}/tasks/`);
-  }, []);
+  }, [dataToReload]);
 
   const insertTasksInColumn = (tasks: Task[]) => {
     const updatedColumns = { ...columns };
@@ -61,21 +62,35 @@ const Project = () => {
           'Content-Type': 'application/json'
         }
       });
-      console.log(response.data);
+      console.log(response.data)
       if(response.status === 200) { // get assigned tasks 
-        const assignedTasks: Task[] = response.data.map((task: Task) => {
+        const projectUsers: User[] = response.data.project_team.map((user: User) => {
+          const project_assigned_User: User = {
+            id: user.id,
+            username: user.username,
+            email: user.email,
+          }
+          return project_assigned_User;
+        });
+        setUsers(projectUsers);
+        const assignedTasks = response.data.tasks.map((task: Task) => {
           const assigned_Task: Task = {
             id: task.id,
             title: task.title,
             content: task.content,
             state: task.state,
             author: task.author,
-            assigned_to: task.assigned_to,
+            assigned_to: task.assigned_to.map((userId: number) => {
+              let user = projectUsers.find((user) => user.id === userId)
+              return user
+            }),
             project: task.project
           }
           return assigned_Task;
         });
         insertTasksInColumn(assignedTasks);
+      } else if(response.status === 404) {
+        console.log("Not able to find the project");
       }
     } catch(error) {
       if(axios.isAxiosError(error)) {
@@ -146,63 +161,66 @@ const Project = () => {
   }
 
   return (
-    <div className='relative w-full max-w-7xl mx-auto h-full mt-3 px-3'>
-      <div className='mt-10 w-full max-w-24 px-1.5 flex items-center justify-between'>
-        <div className='flex items-center gap-2'>
-          {tasksOption.map((task, i) => {
-            return (
-              <button
-                key={i}
-                onClick={(_) => onTaskChange(task.name, task.route)} 
-                className={`px-2.5 py-2.5 rounded-md ${selectedOptions.taskOption === task.name ? "bg-taskSelected text-slate-100" : "bg-projectBg text-gray-300"} transition-opacity duration-300 hover:opacity-80`}>
-                {task.name}
-              </button>
-            )
-          })}
+    <>
+      <div className='relative w-full max-w-7xl mx-auto h-full mt-3 px-3'>
+        <div className='mt-10 w-full max-w-24 px-1.5 flex items-center justify-between'>
+          <div className='flex items-center gap-2'>
+            {tasksOption.map((task, i) => {
+              return (
+                <button
+                  key={i}
+                  onClick={(_) => onTaskChange(task.name, task.route)} 
+                  className={`px-2.5 py-2.5 rounded-md ${selectedOptions.taskOption === task.name ? "bg-taskSelected text-slate-100" : "bg-projectBg text-gray-300"} transition-opacity duration-300 hover:opacity-80`}>
+                  {task.name}
+                </button>
+              )
+            })}
+          </div>
+          <div className='flex items-center gap-1'>
+            {viewOption.map((view, i) => {
+              return (
+                <button
+                  key={i}
+                  onClick={(_) => onViewChange(view.name)}
+                  className={`${selectedOptions.viewOption === view.name ? "bg-registerBlue text-slate-200": "bg-zinc-950"} flex items-center gap-1 px-2 py-1.5 rounded-md transition-opacity duration-300 hover:opacity-80`}
+                >
+                  {view.icon && <view.icon/>}
+                  <span>{view.name}</span>
+                </button>
+              )
+            })}
+          </div>
         </div>
-        <div className='flex items-center gap-1'>
-          {viewOption.map((view, i) => {
-            return (
-              <button
-                key={i}
-                onClick={(_) => onViewChange(view.name)}
-                className={`${selectedOptions.viewOption === view.name ? "bg-registerBlue text-slate-200": "bg-zinc-950"} flex items-center gap-1 px-2 py-1.5 rounded-md transition-opacity duration-300 hover:opacity-80`}
-              >
-                {view.icon && <view.icon/>}
-                <span>{view.name}</span>
-              </button>
-            )
-          })}
-        </div>
-      </div>
-      <motion.button
-        whileHover={{
-          scale: 1.05,
-        }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => dispatch(toggleModal(true))}
-        className='fixed w-14 h-14 lg:w-[68px] lg:h-[68px] bottom-3.5 right-3.5 lg:right-4 lg:bottom-4 text-white bg-appPurple rounded-full'
-      >
-        <AddIcon/>
-      </motion.button>
-      <div className='w-full max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 my-12 px-1'>
-        <DragDropContext 
-          onDragEnd={result => handleOnDragEnd(result)}
+        <motion.button
+          whileHover={{
+            scale: 1.05,
+          }}
+          whileTap={{ scale: 0.9 }}
+          onClick={() => dispatch(toggleModal(true))}
+          className='fixed w-14 h-14 lg:w-[68px] lg:h-[68px] bottom-3.5 right-3.5 lg:right-4 lg:bottom-4 text-white bg-appPurple rounded-full'
         >
-          {Object.entries(columns).map(([id, column]) => {
-            return (
-              <Column
-                key={id}
-                id={id}
-                title={column.title}
-                tasks={column.tasks}
-              />
-            )
-          })}
-        </DragDropContext>
+          <AddIcon/>
+        </motion.button>
+        <div className='w-full max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 lg:gap-5 my-12 px-1'>
+          <DragDropContext 
+            onDragEnd={result => handleOnDragEnd(result)}
+          >
+            {Object.entries(columns).map(([id, column], ind) => {
+              return (
+                <Column
+                  key={ind}
+                  column_id={id}
+                  title={column.title}
+                  tasks={column.tasks}
+                />
+              )
+            })}
+          </DragDropContext>
+        </div>
+        {isModalOpen && <TaskModalWindow projectId={projectID} projectTeam={users}/>}
       </div>
-      {isModalOpen && <TaskModalWindow projectId={projectID} projectTeam={users}/>}
-    </div>
+      <ToastContainer/>
+    </>
   )
 }
 

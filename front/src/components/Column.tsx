@@ -4,19 +4,15 @@ import { Task } from '../types/project-types'
 import { Draggable, Droppable } from 'react-beautiful-dnd';
 
 type TableColumnProps = {
-  id: string,
+  column_id: string,
   title: string,
   tasks: Task[]
 }
 
-function Column({ id, title, tasks }: TableColumnProps) {
-
+function Column({ column_id, title, tasks }: TableColumnProps) {
+  
   return (
-    <Droppable 
-      type="COLUMN"
-      key={id}
-      droppableId={id}
-    >
+    <Droppable type="COLUMN" droppableId={column_id}>
       {(provided) => {
         return (
           <div

@@ -49,9 +49,12 @@ export type AuthFormErrors = {
 }
 
 export type User = {
-  id: string,
-  name: string,
-  specialization: Specialization
+  id: number,
+  username: string,
+  email: string,
+  date_joined?: string,
+  has_email_verified?: boolean,
+  is_superuser?: boolean
 }
 
 export type Project = {
@@ -64,22 +67,13 @@ export type Project = {
   last_modified: string,
 }
 
-export interface TaskCredentials {
-  name: string;
-  assignedTo?: {
-    userId: string
-  };
-  estimation: string;
-  specialization: Specialization;
-}
-
 export interface Task {
   id: number,
   title: string,
   content: string,
   state: string,
   author: number,
-  assigned_to: User[],
+  assigned_to: number[] | User[],
   project: number
 }
 

@@ -60,7 +60,7 @@ export const tasksOption = [
   },
   {
     name: "Created",
-    route: "/projects/created/"
+    route: "/projects/created-tasks/"
   }
 ]
 
