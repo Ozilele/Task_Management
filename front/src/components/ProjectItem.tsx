@@ -1,6 +1,5 @@
-import { Project, User } from '../types/project-types';
+import { Project } from '../types/project-types';
 import ArrowForwardOutlinedIcon from '@mui/icons-material/ArrowForwardOutlined';
-import { Avatar } from '@mui/material';
 import { v4 as uuidv4 } from 'uuid';
 import { Link } from 'react-router-dom';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
@@ -45,13 +44,6 @@ const ProjectItem = ({ data }: ProjectItemProps) => {
         </div>
       </div>
       <div className='w-full flex items-center justify-between row-span-1'>
-        {/* <div className='w-2/4 flex items-center gap-1 truncate ...'>
-          {users.map((user: User, i: number) => {
-            return (
-              <Avatar key={i} className='!w-7 !h-7 !text-homeInput'>{user.name[0].toUpperCase()}</Avatar>
-            )
-          })}
-        </div> */}
         <button className='flex items-center justify-between gap-1 px-2 py-1 bg-appPurple hover:opacity-80 rounded-md'>
           <Link to={tasksForProjectLink}>View</Link>
           <ArrowForwardOutlinedIcon/>

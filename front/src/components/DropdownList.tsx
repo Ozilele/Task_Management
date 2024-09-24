@@ -1,31 +1,45 @@
 import { Avatar } from "@mui/material"
 import { TaskState, User } from "../types/project-types"
+import { memo } from "react"
 
 type DropdownListProps = {
-  value: string | User,
+  multiple: boolean,
+  value: string | User[] | undefined,
   style?: React.CSSProperties,
-  setFunc: (arg: string | User) => void,
+  isOpen: boolean,
+  onChange: (arg: string | User) => void,
   items: User[] | TaskState[]
 }
 
-const DropdownList = ({ value, style, setFunc, items }: DropdownListProps) => {
-  const onItemClick = (e: React.MouseEvent<HTMLLIElement>, item: string) => {
-    // e.stopPropagation();
-    setFunc(item);
-  }
-  const isOptionSelected = (item: string | User) => {
-    return item === value;
+const DropdownList = ({ multiple, value, style, isOpen, onChange, items }: DropdownListProps) => {
+  
+  const isOptionSelected = (item: string) => {
+    if(!multiple) {
+      return item === value;  
+    } else {
+      if(Array.isArray(value)) {
+        return value.some(user => user.username === item);
+      }
+    }
   }
   return (
-    <div style={style} className='z-10 mt-1 flex flex-col absolute top-full w-full bg-white rounded-t-none rounded-md'>
-      <ul className='flex flex-col gap-2 list-none px-2 mb-3.5 mt-1.5 min-h-1/2'>
+    <div 
+      style={style} 
+      className={`z-10 mt-1.5 absolute left-0 top-full w-full rounded-t-none rounded-md transition-all ease-in delay-100 duration-200 ${isOpen ? 'opacity-100 translate-y-0 flex flex-col' : 'opacity-0 translate-y-3 hidden'}`}
+    >
+      <ul className='flex flex-col gap-1.5 list-none px-1.5 mb-5 mt-2 min-h-1/2'>
         {items.map((item, i) => {
           if(typeof item === "string") {
             return (
               <li 
                 key={i} 
-                onClick={(e) => onItemClick(e, item)} 
-                className={`w-full py-1  px-1 border-b-2 border-stone-700 hover:bg-slate-300 cursor-pointer ${isOptionSelected(item) ? "bg-registerBlue" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if(item !== value) {
+                    onChange(item);
+                  }
+                }}
+                className={`w-full rounded-sm py-1.5 px-1 border-b-2 border-stone-700 transition-all ease-linear duration-150 hover:bg-blue-500 cursor-pointer ${isOptionSelected(item) ? "bg-myBlue" : ""}`}
               >
                 {item}
               </li>
@@ -34,11 +48,14 @@ const DropdownList = ({ value, style, setFunc, items }: DropdownListProps) => {
             return (
               <div 
                 key={item.id} 
-                onClick={() => setFunc(item)}
-                className={`w-full py-2 flex justify-between items-start border-b-2 border-violet-400 ${item.username === value && "bg-registerBlue"}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(item);
+                }}
+                className={`w-full py-2 flex justify-between items-start cursor-pointer border-b-2 border-slate-400 ${isOptionSelected(item.username) && "bg-myBlue"}`}
               >
-                <div className="flex items-center gap-1">
-                  <Avatar className="!w-7 !h-7">{item.username[0].toUpperCase()}</Avatar>
+                <div className="flex items-center gap-1.5 px-2">
+                  <Avatar className="!w-7 !h-7 !bg-slate-200">{item.username[0].toUpperCase()}</Avatar>
                   <h4>{item.username}</h4>
                 </div>
               </div>
@@ -47,7 +64,7 @@ const DropdownList = ({ value, style, setFunc, items }: DropdownListProps) => {
         })}
       </ul>
     </div>
-  )
+  );
 }
 
-export default DropdownList;
+export default memo(DropdownList);

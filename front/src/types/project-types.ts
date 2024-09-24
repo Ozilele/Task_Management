@@ -77,6 +77,13 @@ export interface Task {
   project: number
 }
 
+export type TaskData = {
+  title: string,
+  content: string,
+  state: string,
+  currAssignedUsers: User[] | null;
+}
+
 export type CurrTaskOption = "All Tasks" | "My Tasks" | "Created";
 
 export type CurrViewOption = {

@@ -18,7 +18,8 @@ export default {
         customBlack: "rgba(31, 33, 36, 1)",
         taskSelected: "#576AEA",
         blacking: "#1F2124",
-        taskFocus: "#303663"
+        taskFocus: "#303663",
+        myBlue: "#0ea5e9"
       },
       minHeight: {
         '1/2': '100px'

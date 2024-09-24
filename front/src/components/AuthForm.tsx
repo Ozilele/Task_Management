@@ -1,5 +1,5 @@
 import { useState } from "react"
-import api from "../api"
+import api, { authResponseInterceptor, setupAuthInterceptor } from "../api"
 import axios from "axios"
 import { AuthFormInputsState, AuthInputElement, AuthFormErrors } from "../types/project-types"
 import { ACCESS_TOKEN, REFRESH_TOKEN } from "../constants"
@@ -75,7 +75,11 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
     if(!validateForm()) {
       return;
     }
+    if(authResponseInterceptor != null) {
+      api.interceptors.response.eject(authResponseInterceptor);  
+    }
     if(method === "login") {
+      console.log("auth: " + authResponseInterceptor);
       try {
         response = await api.post(route, {
           email: input_values.email,
@@ -90,7 +94,7 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
         navigate("/");
       } catch(error) {
         if(axios.isAxiosError(error)) {
-          if(error.response?.status === 401) { // Unathorized
+          if(error.response?.status === 401) { // Unauthorized response
             const error_msg = error.response.data.detail;
             toast.error("Unauthorized: " + error_msg, {
               position: "top-center",
@@ -114,6 +118,7 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
         }
       } finally {
         setInputs(initialInputState);
+        setupAuthInterceptor(); // setup interceptor again
       }
     } else { // register route
       try {
@@ -152,6 +157,7 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
         }
       } finally {
         setInputs(initialInputState);
+        setupAuthInterceptor();
       }
     }
   }

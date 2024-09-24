@@ -62,7 +62,7 @@ const Project = () => {
           'Content-Type': 'application/json'
         }
       });
-      console.log(response.data)
+      console.log(response.data);
       if(response.status === 200) { // get assigned tasks 
         const projectUsers: User[] = response.data.project_team.map((user: User) => {
           const project_assigned_User: User = {
@@ -117,7 +117,7 @@ const Project = () => {
     }));
   }
 
-  const handleOnDragEnd = (result) => {
+  const handleOnDragEnd = (result: any) => {
     const draggableId = result.draggableId;
     if(!result.destination) {
       return;

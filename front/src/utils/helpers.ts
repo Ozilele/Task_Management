@@ -4,17 +4,8 @@ import { CurrViewOption } from "../types/project-types";
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
 import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
-
-export const backend_url = "http://localhost:4444";
-
-export const API_URL = "https://task-manager-api-401408.lm.r.appspot.com"
-export const standard_headers = {
-  headers: {
-    'Content-Type': 'application/json',
-    'user-id': "u_rdokvuomzxlexevwbcfr",
-    'secret-key': "zzkukrviybwqreleibsduakorgqqgmeiwdgackmuitinkysygvpedhryywjfqltlksuuiklhqznmnayxvxnhnpmvsfanahzgajsncpoblkqbhdyldntawlnzbvmhqczp"
-  }
-}
+import { REFRESH_TOKEN } from "../constants";
+import api, { authResponseInterceptor, setupAuthInterceptor } from "../api";
 
 export const task_states = [
   TaskState.TO_DO,
@@ -88,6 +79,20 @@ export const formatDate = (dateString: string) => {
   const minutes = String(dateObj.getUTCMinutes()).padStart(2, '0');
   const formattedDate = `${year}-${month}-${day}-${hours}:${minutes}`;
   return formattedDate
+}
+
+export function stringToColor(string: string) {
+  let hash = 0;
+  let i;
+  for (i = 0; i < string.length; i += 1) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  let color = '#';  
+  for (i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += `00${value.toString(16)}`.slice(-2);
+  }
+  return color;
 }
 
 export const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -200,4 +205,27 @@ export const validatePassword = (password: string) => {
     return true;
   }
   return false;
+}
+
+export const refreshToken = async (ejectInterceptor: boolean) => { 
+  const refresh_token = localStorage.getItem(REFRESH_TOKEN);
+  if(ejectInterceptor && authResponseInterceptor != null) { // eject the interceptor
+    api.interceptors.response.eject(authResponseInterceptor);
+  }
+  return api.post("/api/auth/token/refresh/", { refresh: refresh_token })
+    .then((response) => {
+      if(response.status === 200) {
+        return response.data.access;
+      }
+      return Promise.reject(response.status + " " + response.statusText);
+    })
+    .catch((err) => {
+      console.log("Error refreshing");
+      return Promise.reject(err);
+    })
+    .finally(() => {
+      if(ejectInterceptor) { // setting up again authResponseInterceptor
+        setupAuthInterceptor();
+      }
+    });
 }
