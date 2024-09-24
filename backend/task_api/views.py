@@ -6,7 +6,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from auth_api.serializers import UserModelSerializer
 from .serializers import TaskSerializer, ProjectSerializer
-from .models import Task, Project, task_state
+from .helpers import map_task_state_to_id
+from .models import Task, Project
     
 class AssignedProjectList(generics.ListAPIView):
     serializer_class = ProjectSerializer
@@ -43,12 +44,7 @@ class TaskList(APIView):
     def post(self, request, project_id):
         if project_id is None:
             return ValidationError("Project ID is required")
-        state_txt = request.data.pop('state')
-        for state in task_state:
-            id, txt = state
-            if txt == state_txt:
-                state_id = id
-        request.data['state'] = state_id
+        request.data['state'] = map_task_state_to_id(request.data)
         try:
             project = Project.objects.get(id=project_id)
         except Project.DoesNotExist:
@@ -103,6 +99,7 @@ class TaskDetail(APIView): # View for getting single task, updating, deleting
 
     def put(self, request, project_id, task_id, format=None):
         task = self.get_object(task_id)
+        request.data['state'] = map_task_state_to_id(request.data)
         serializer = TaskSerializer(task, data=request.data) # self.update() -> updating an instance
         if serializer.is_valid():
             serializer.save()
