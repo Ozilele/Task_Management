@@ -2,7 +2,7 @@ from typing import Any, Dict
 from .models import CustomUser
 from django.contrib.auth import authenticate
 from rest_framework import serializers, exceptions
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UserModelSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, required=True, min_length=5)
@@ -46,7 +46,3 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             return data
         else:
             raise exceptions.AuthenticationFailed("Failed to validate token.")
-
-# class CustomTokenRefreshSerializer(TokenRefreshSerializer):
-#     def validate(self, attrs: Dict[str, Any]):
-#         # return super().validate(attrs)

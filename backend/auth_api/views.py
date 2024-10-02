@@ -10,7 +10,7 @@ from rest_framework.views import APIView
 from .serializers import UserModelSerializer, CustomTokenObtainPairSerializer
 from .models import CustomUser
 from django.conf import settings
-from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+from rest_framework_simplejwt.views import TokenObtainPairView
 
 class UserRegistrationView(generics.CreateAPIView):
     queryset = CustomUser.objects.all()
@@ -44,9 +44,6 @@ class UserRegistrationView(generics.CreateAPIView):
     
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer # custom serializer used for token generation
-
-# class CustomTokenRefreshView(TokenRefreshView):
-#     serializer_class = CustomTokenRefreshSerializer # custom token refresh serializer for generating access token based on refresh token
 
 class ActivateAccount(APIView):
     authentication_classes = []
