@@ -10,6 +10,8 @@ import Avatar from '@mui/material/Avatar';
 import CommentOutlinedIcon from '@mui/icons-material/CommentOutlined';
 import api from "../api";
 import { stringToColor } from "../utils/helpers";
+import { memo } from "react";
+import { Link } from "react-router-dom";
 
 type TaskItemProps = {
   snapshot: any,
@@ -97,12 +99,14 @@ const TaskItem = ({ snapshot, taskId, reference, dragProps, dragHandle, task }: 
           })}
         </div>
         <div className="flex items-center gap-1">
-          <CommentOutlinedIcon/>
-          <span>6</span>
+          <Link to={`/project/${task.project}/task/${taskId}`}>
+            <CommentOutlinedIcon/>
+            <span>6</span>
+          </Link>
         </div>
       </div>
     </div>
   );
 }
 
-export default TaskItem;
+export default memo(TaskItem);

@@ -1,8 +1,8 @@
 import axios from 'axios';
-import { useEffect, useState } from 'react'
+import { memo, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom';
-import { my_columns, tasksOption, viewOption } from '../utils/helpers';
-import { CurrTaskOption, Task, User } from '../types/project-types';
+import { my_columns, tasksOption, toast_config, viewOption } from '../utils/helpers';
+import { CurrTaskOption, MyTask, Task, User } from '../types/project-types';
 import { DragDropContext } from 'react-beautiful-dnd';
 import AddIcon from '@mui/icons-material/Add';
 import TaskModalWindow from '../components/TaskModalWindow';
@@ -10,8 +10,8 @@ import Column from '../components/Column';
 import api from '../api';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectDataToBeReload, selectModalOpen, toggleModal } from '../features/appSlice';
-import { ToastContainer } from 'react-toastify';
+import { reloadData, selectDataToBeReload, selectModalOpen, toggleModal } from '../features/appSlice';
+import { toast, ToastContainer } from 'react-toastify';
 
 type SelectedView = "Grid" | "List" | "Board"
 type SelectedOptions = {
@@ -20,7 +20,7 @@ type SelectedOptions = {
 }
 
 const Project = () => {
-  const { id } = useParams();
+  const { id } = useParams<{ id: string }>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [columns, setColumns] = useState(my_columns);
   const [users, setUsers] = useState<User[]>([]);
@@ -31,66 +31,82 @@ const Project = () => {
   const dispatch = useDispatch();
   const isModalOpen = useSelector(selectModalOpen);
   const dataToReload = useSelector(selectDataToBeReload);
-  const projectID = parseInt(id[id?.length - 1]);
+  const projectID = id ? parseInt(id[id?.length - 1]) : 0;
 
   useEffect(() => {
-    // projects/<int:project_id>/tasks/ -all tasks
-    // projects/<int:project_id>/assigned-tasks/ - assigned tasks to user
-    // projects/<int:project_id>/created-tasks/ - created tasks by user
-    getTasks(`/projects/${projectID}/tasks/`);
+    switch(selectedOptions.taskOption) {
+      case "All Tasks": 
+        getTasks("tasks/");
+        break;
+      case "My Tasks":
+        getTasks("assigned-tasks/");
+        break;
+      case "Created":
+        getTasks("created-tasks/");
+        break;
+    }
   }, [dataToReload]);
 
-  const insertTasksInColumn = (tasks: Task[]) => {
+  const insertTasksInColumn = (tasks: MyTask[]) => {
     const updatedColumns = { ...columns };
-    tasks.forEach((task: Task) => {
+    for(const columnId in updatedColumns) {
+      updatedColumns[columnId].tasks = [] // resetting column tasks before applying new data 
+    }
+    tasks.forEach((task: MyTask) => {
       for(const columnId in updatedColumns) {
         const column = updatedColumns[columnId];
         if(column.title === task.state) {
-          column.tasks.push(task);
+          column.tasks.push(task); // add task to the appropriate column
           break;
         }
       }
     });
     setColumns(updatedColumns);
   }
+
   // /api/${projectID}/tasks/
   const getTasks = async (apiRoute: string) => {
     setIsLoading(true);
     try {
-      let response = await api.get(`/api${apiRoute}`, {
+      let response = await api.get(`/api/projects/${projectID}/${apiRoute}`, {
         headers: {
           'Content-Type': 'application/json'
         }
       });
       console.log(response.data);
+
       if(response.status === 200) { // get assigned tasks 
-        const projectUsers: User[] = response.data.project_team.map((user: User) => {
-          const project_assigned_User: User = {
-            id: user.id,
-            username: user.username,
-            email: user.email,
-          }
-          return project_assigned_User;
-        });
-        setUsers(projectUsers);
-        const assignedTasks = response.data.tasks.map((task: Task) => {
-          const assigned_Task: Task = {
+        let projectUsers: User[];
+        if(apiRoute === "tasks/") { // all tasks
+          projectUsers = response.data.project_team.map((user: User) => {
+            const project_assigned_User: User = {
+              id: user.id,
+              username: user.username,
+              email: user.email,
+            }
+            return project_assigned_User;
+          });
+          setUsers(projectUsers);
+        } 
+        const assignedTasks: MyTask[] = response.data.tasks.map((task: Task) => {
+          const assigned_Task: MyTask = {
             id: task.id,
             title: task.title,
             content: task.content,
             state: task.state,
             author: task.author,
-            assigned_to: task.assigned_to.map((userId: number) => {
-              let user = projectUsers.find((user) => user.id === userId)
-              return user
+            assigned_to: (task.assigned_to as number[]).map((userId: number) => {
+              let user = apiRoute === "tasks/" ? projectUsers.find((user) => user.id === userId) : users.find(user => user.id === userId);
+              return user || {} as User
             }),
             project: task.project
           }
           return assigned_Task;
         });
         insertTasksInColumn(assignedTasks);
-      } else if(response.status === 404) {
-        console.log("Not able to find the project");
+      } 
+      else if(response.status === 404) {
+        console.log("Not able to find the tasks");
       }
     } catch(error) {
       if(axios.isAxiosError(error)) {
@@ -118,7 +134,6 @@ const Project = () => {
   }
 
   const handleOnDragEnd = (result: any) => {
-    const draggableId = result.draggableId;
     if(!result.destination) {
       return;
     }
@@ -126,10 +141,12 @@ const Project = () => {
     if(source.droppableId !== destination.droppableId) { // dragging between columns
       const srcColumn = columns[source.droppableId];
       const destColumn = columns[destination.droppableId];
+      const destTaskState = destColumn.title;
       const srcTasks = [...srcColumn.tasks];
       const destTasks = [...destColumn.tasks];
-      const [removed] = srcTasks.splice(source.index, 1);
+      const [removed] = srcTasks.splice(source.index, 1); // removed is actual task that was dragged 
       destTasks.splice(destination.index, 0, removed);
+
       setColumns((prev) => {
         return {
           ...prev,
@@ -142,6 +159,25 @@ const Project = () => {
             tasks: destTasks
           }
         }
+      });
+      api.put(`/api/projects/${projectID}/tasks/${removed.id}/`, {
+        state: destTaskState
+      })
+      .then(response => {
+        if(response.status === 204) {
+          toast.success("Task updated!", toast_config); // toast and reloadData
+          dispatch(reloadData());
+        } else {
+          toast.error("Error updating task", toast_config);
+        }
+      })
+      .catch((err) => {
+        if(axios.isAxiosError(err)) {
+          console.log(err.response);
+        } else {
+          console.error(err);  
+        }
+        toast.error("Error updating task", toast_config);
       });
     } else { // Dragging in the same column
       const column = columns[source.droppableId];
@@ -224,4 +260,4 @@ const Project = () => {
   )
 }
 
-export default Project;
+export default memo(Project);

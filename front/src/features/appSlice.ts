@@ -43,8 +43,8 @@ export const appSlice = createSlice({
     setAppTheme: (state, action: PayloadAction<AppTheme>) => {
       state.currTheme = action.payload;
     },
-    reloadData: (state) => {
-      state.dataToBeReload = true
+    reloadData: (state) => { // just to reload data
+      state.dataToBeReload = !state.dataToBeReload
     },
     resetReloadData: (state) => {
       state.dataToBeReload = false

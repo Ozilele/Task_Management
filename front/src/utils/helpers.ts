@@ -1,4 +1,4 @@
-import { Specialization, TaskState } from "../types/project-types";
+import { Columns, Specialization, TaskState } from "../types/project-types";
 import { v4 as uuidv4 } from 'uuid';
 import { CurrViewOption } from "../types/project-types";
 import ListRoundedIcon from '@mui/icons-material/ListRounded';
@@ -6,6 +6,7 @@ import GridViewOutlinedIcon from '@mui/icons-material/GridViewOutlined';
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import { REFRESH_TOKEN } from "../constants";
 import api, { authResponseInterceptor, setupAuthInterceptor } from "../api";
+import { ToastOptions } from "react-toastify";
 
 export const task_states = [
   TaskState.TO_DO,
@@ -21,7 +22,7 @@ export const specializations = [
   Specialization.UX_UI
 ]
 
-export const my_columns = {
+export const my_columns: Columns = {
   [uuidv4()]: {
     title: "To Do",
     tasks: []
@@ -43,15 +44,15 @@ export const my_columns = {
 export const tasksOption = [
   {
     name: "All Tasks",
-    route: "/projects/tasks/"
+    route: "tasks/"
   },
   {
     name: "My Tasks",
-    route: "/projects/assigned-tasks/",
+    route: "assigned-tasks/",
   },
   {
     name: "Created",
-    route: "/projects/created-tasks/"
+    route: "created-tasks/"
   }
 ]
 
@@ -93,6 +94,17 @@ export function stringToColor(string: string) {
     color += `00${value.toString(16)}`.slice(-2);
   }
   return color;
+}
+
+export const toast_config: ToastOptions = {
+  position: "top-right",
+  autoClose: 3000,
+  theme: "dark",
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  draggable: true,
+  progress: undefined,
 }
 
 export const monthsShort = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -229,3 +241,36 @@ export const refreshToken = async (ejectInterceptor: boolean) => {
       }
     });
 }
+
+export const dummy_chat_messages = [
+  {
+    "message": "Siema widzowie, co tam u was",
+    "author": "Mario",
+    "timestamp": "2024-09-27 16:51:21"
+  },
+  {
+    "message": "Elo 🫠",
+    "author": "Maryska_",
+    "timestamp": "2024-09-27 16:52:25"
+  },
+  {
+    "message": "Siemanko 😎😎",
+    "author": "Jeff_12",
+    "timestamp": "2024-09-27 16:53:11"
+  },
+  {
+    "message": "Joł",
+    "author": "Chris",
+    "timestamp": "2024-09-27 16:55:35"
+  },
+  {
+    "message": "Cześć, wszyscy są juz dostępni online?",
+    "author": "Jeff_12",
+    "timestamp": "2024-09-27 16:57:04"
+  },
+  {
+    "message": "Chyba tak",
+    "author": "Mario",
+    "timestamp": "2024-09-27 16:57:21"
+  },
+]

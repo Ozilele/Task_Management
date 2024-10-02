@@ -2,7 +2,7 @@ import axios from "axios"
 import { ACCESS_TOKEN } from "./constants";
 import { refreshToken } from "./utils/helpers";
 
-const API_URL = "http://127.0.0.1:8000";
+export const API_URL = "http://127.0.0.1:8000";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -28,14 +28,13 @@ export const setupAuthInterceptor = () => {
     response => response,
     async (error) => {
       const status = error.response ? error.response.status : null;
-      console.log("Status: " + status);
       if(status === 401) { // Handling unauthorized access
         try {
           const newToken = await refreshToken(true);
           if(newToken) {
             localStorage.setItem(ACCESS_TOKEN, newToken);
             console.log("Successfully refreshed token...");
-            error.config.headers['Authorization'] = `Bearer ${newToken}`;
+            error.config.headers['Authorization'] = `Bearer ${newToken}`; // adding new token to req headers
             return axios(error.config); // retry the original request after refreshing the token
           }
         } catch(error) {

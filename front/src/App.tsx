@@ -7,6 +7,7 @@ import Home from './pages/Home'
 import Project from './pages/Project'
 import Navigation from './components/Navigation'
 import ProtectedRoute from './components/ProtectedRoute'
+import Task from './pages/Task'
 
 const router = createBrowserRouter([
   {
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
       {
         path: "project/:id",
         element: <Project/>
+      },
+      {
+        path: "project/:id/task/:taskId",
+        element: <Task/>
       }
     ]
   }

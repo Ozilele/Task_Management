@@ -1,16 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { FormMode, TaskData, User } from '../types/project-types';
-import { task_states } from '../utils/helpers';
+import 'react-toastify/dist/ReactToastify.css';
+import { FormMode, TaskData, User,  } from '../types/project-types';
+import { task_states, toast_config } from '../utils/helpers';
 import AddTaskIcon from '@mui/icons-material/AddTask';
 import EditRoundedIcon from '@mui/icons-material/EditRounded';
 import { useDispatch } from 'react-redux';
 import { changeFormMode, closeModal, reloadData, resetTaskFormData, selectFormMode, selectTaskFormData } from '../features/appSlice';
 import { useSelector } from 'react-redux';
-import 'react-toastify/dist/ReactToastify.css';
 import Overlay from './Overlay';
 import DropdownInput from './DropdownInput';
 import api from '../api';
-import { toast, ToastOptions } from 'react-toastify';
+import { toast } from 'react-toastify';
 import axios from 'axios';
 
 type TaskModalWindowProps = {
@@ -22,16 +22,6 @@ const initialTaskDataState = {
   content: "",
   state: "",
   currAssignedUsers: null,
-}
-const toast_config: ToastOptions = {
-  position: "top-right",
-  autoClose: 3000,
-  theme: "dark",
-  hideProgressBar: false,
-  closeOnClick: true,
-  pauseOnHover: true,
-  draggable: true,
-  progress: undefined,
 }
 
 const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
@@ -50,8 +40,6 @@ const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
       });
     }
   }, []);
-
-  console.log(taskData);
 
   const onInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setTaskData((prev) => ({
@@ -133,9 +121,17 @@ const TaskModalWindow = ({ projectId, projectTeam }: TaskModalWindowProps) => {
           dispatch(closeModal());
           toast.success("Task updated!", toast_config); // toast and reloadData
           dispatch(reloadData());
+        } else {
+          setTaskData(initialTaskDataState);
+          toast.error("Error updating task", toast_config);
         }
       } catch(err) {
-        console.error(err);
+        if(axios.isAxiosError(err)) {
+          console.log(err.response);
+        } else {
+          console.error(err);  
+        }
+        toast.error("Error updating task", toast_config);
       }
     }
   }

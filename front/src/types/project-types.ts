@@ -77,6 +77,10 @@ export interface Task {
   project: number
 }
 
+export interface MyTask extends Task {
+  assigned_to: User[],
+}
+
 export type TaskData = {
   title: string,
   content: string,
@@ -98,4 +102,22 @@ export type TaskFormData = {
   state: string,
   project_id: number // project id
   currAssignedUsers: User[],
+}
+
+export interface Column {
+  title: string,
+  tasks: Task[];
+}
+
+export type Columns = {
+  [key: string]: Column,
+}
+
+export type ChatMessage = {
+  id: number,
+  author: number,
+  content: string,
+  timestamp: string,
+  receiver?: number | null,
+  attachment?: string,
 }
