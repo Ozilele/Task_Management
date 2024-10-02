@@ -13,11 +13,12 @@ class TaskSerializer(serializers.ModelSerializer):
         instance.assigned_to.set(assigned_users)
         return instance
     
-    def to_representation(self, instance):
+    def to_representation(self, instance): # TO JSON format
         obj = super().to_representation(instance)
         obj.pop("state")
         obj['state'] = instance.get_state_display()
         return obj
+    
     
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
@@ -34,4 +35,3 @@ class ProjectSerializer(serializers.ModelSerializer):
     def to_representation(self, instance): # TO JSON
         obj = super().to_representation(instance)
         return obj
-

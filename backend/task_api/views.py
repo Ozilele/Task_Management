@@ -55,33 +55,36 @@ class TaskList(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class AssignedTaskList(generics.ListAPIView):
-    serializer_class = TaskSerializer        
+class AssignedTaskList(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        project = self.kwargs.get('project_id')
-        if project is not None:
-            user = self.request.user
-            if user is None:
-                return ValidationError('User is required to query results.')
-            return Task.objects.filter(project=project, assigned_to__in=[user]) # get all tasks in given project which are assigned to user
-        else:
-            return ValidationError('Project ID is required.')
+    def get(self, request, project_id):
+        if project_id is None:
+            return Response("Bad request - project_id is required.", status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        if user is None:
+            return ValidationError('User is required to query results.')
+        assigned_tasks = Task.objects.filter(project=project_id, assigned_to__in=[user])
+        serializer = TaskSerializer(assigned_tasks, many=True)
+        return Response({
+            "tasks": serializer.data # serialization of tasks
+        }, status=status.HTTP_200_OK)
+        # get all tasks in given project which are assigned to user
 
-class CreatedTaskList(generics.ListAPIView):
-    serializer_class = TaskSerializer
+class CreatedTaskList(APIView):
     permission_classes = [IsAuthenticated]
 
-    def get_queryset(self):
-        project = self.kwargs.get('project_id')
-        if project is not None:
-            user = self.request.user
-            if user is None:
-                return ValidationError('User is required to query results.')
-            return Task.objects.filter(project=project, author=user)
-        else:
-            return ValidationError("Project ID is required.")
+    def get(self, request, project_id):
+        if project_id is None:
+            return Response("Bad request - project_id is required.", status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        if user is None:
+            return ValidationError('User is required to query results.')
+        created_tasks = Task.objects.filter(project=project_id, author=user)
+        serializer = TaskSerializer(created_tasks, many=True)
+        return Response({
+            "tasks": serializer.data
+        }, status=status.HTTP_200_OK)
 
 class TaskDetail(APIView): # View for getting single task, updating, deleting
     permission_classes = [IsAuthenticated]
@@ -100,7 +103,7 @@ class TaskDetail(APIView): # View for getting single task, updating, deleting
     def put(self, request, project_id, task_id, format=None):
         task = self.get_object(task_id)
         request.data['state'] = map_task_state_to_id(request.data)
-        serializer = TaskSerializer(task, data=request.data) # self.update() -> updating an instance
+        serializer = TaskSerializer(task, data=request.data, partial=True) # self.update() -> updating an instance, partial = True for partial update
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
@@ -111,41 +114,41 @@ class TaskDetail(APIView): # View for getting single task, updating, deleting
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-class TaskItem(generics.RetrieveAPIView):
-    serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = "task_id"
+# class TaskItem(generics.RetrieveAPIView):
+#     serializer_class = TaskSerializer
+#     permission_classes = [IsAuthenticated]
+#     lookup_field = "task_id"
 
-    def get_queryset(self): # get task of given id of all tasks for specific project
-        project = self.kwargs.get('project_id')
-        return Task.objects.filter(project=project)
+#     def get_queryset(self): # get task of given id of all tasks for specific project
+#         project = self.kwargs.get('project_id')
+#         return Task.objects.filter(project=project)
     
-    def get_object(self):
-        return super().get_object()
+#     def get_object(self):
+#         return super().get_object()
 
-class TaskDelete(generics.DestroyAPIView):
-    serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = "task_id"
+# class TaskDelete(generics.DestroyAPIView):
+#     serializer_class = TaskSerializer
+#     permission_classes = [IsAuthenticated]
+#     lookup_field = "task_id"
 
-    def get_queryset(self):
-        project = self.kwargs.get('project_id')
-        return Task.objects.filter(project=project)
+#     def get_queryset(self):
+#         project = self.kwargs.get('project_id')
+#         return Task.objects.filter(project=project)
 
-class TaskUpdate(generics.UpdateAPIView):
-    serializer_class = TaskSerializer
-    permission_classes = [IsAuthenticated]
-    lookup_field = "task_id"
+# class TaskUpdate(generics.UpdateAPIView):
+#     serializer_class = TaskSerializer
+#     permission_classes = [IsAuthenticated]
+#     lookup_field = "task_id"
 
-    def get_queryset(self): # get all tasks for given project
-        project = self.kwargs.get('project_id')
-        return Task.objects.filter(project=project)
+#     def get_queryset(self): # get all tasks for given project
+#         project = self.kwargs.get('project_id')
+#         return Task.objects.filter(project=project)
     
-    def perform_update(self, serializer):
-        project = self.kwargs.get('project_id')
-        if serializer.is_valid() and project is not None:
-            serializer.save(project=project)    
-        else:
-            print(serializer.errors)
-            raise ValidationError("Project ID is required")
+#     def perform_update(self, serializer):
+#         project = self.kwargs.get('project_id')
+#         if serializer.is_valid() and project is not None:
+#             serializer.save(project=project)    
+#         else:
+#             print(serializer.errors)
+#             raise ValidationError("Project ID is required")
     
