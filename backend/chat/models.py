@@ -2,7 +2,7 @@ from django.db import models
 from django.conf import settings
 from task_api.models import Task, Project
 
-class Room(models.Model):
+class Room(models.Model): # database table Room
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="chat", blank=True, null=True) # Task_obj.chat -> single chat application on each Task  
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="chat", blank=True, null=True) # Project_obj.chat -> single chat app on each Project
     online = models.ManyToManyField(to=settings.AUTH_USER_MODEL, blank=True) # list of online users

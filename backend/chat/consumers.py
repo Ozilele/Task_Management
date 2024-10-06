@@ -64,7 +64,7 @@ class ChatConsumer(WebsocketConsumer):
                 message.room_id = self.room.id
             elif type == "private":
                 message.receiver_id = text_data_json['receiver_id']
-            message.save() # Save message to database
+            message.save() # Save message to database -> SQL INSERT
             async_to_sync(self.channel_layer.group_send)( # sends an event to group, event has a special 'type' corresponding to method that should be invoked on consumers that receive the event
                 self.room_group_name, { "type": "chat.message", "message_type": type, "message_data": message }
             )
