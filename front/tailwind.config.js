@@ -19,7 +19,8 @@ export default {
         taskSelected: "#576AEA",
         blacking: "#1F2124",
         taskFocus: "#303663",
-        myBlue: "#0ea5e9"
+        myBlue: "#0ea5e9",
+        chatBubble: "#1183f9"
       },
       minHeight: {
         '1/2': '100px'
