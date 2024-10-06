@@ -8,7 +8,7 @@ import { formatDate } from '../utils/helpers';
 import ProjectItem from '../components/ProjectItem';
 import { Project } from '../types/project-types';
 import { useSelector, useDispatch } from 'react-redux';
-import { openModal, selectModalOpen } from '../features/appSlice';
+import { openModal, selectModalOpen, setLoggedUser } from '../features/appSlice';
 import ProjectModalWindow from '../components/ProjectModalWindow';
 
 type ProjectInput = {
@@ -32,9 +32,14 @@ const Home = () => {
     try {
       setIsLoading(true);
       let response = await api.get("/api/projects/");
-      console.log(response.data);
       if(response.status === 200) {
-        const assigned_projects = response.data.map((project: Project) => {
+        const user = response.data.logged_user;
+        dispatch(setLoggedUser({ // setLoggedUser
+          id: user.id,
+          email: user.email,
+          username: user.username,
+        }));
+        const assigned_projects = response.data.assigned_projects.map((project: Project) => {
           const newProject: Project = {
             id: project.id,
             title: project.title,

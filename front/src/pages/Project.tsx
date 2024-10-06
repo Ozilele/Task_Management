@@ -10,7 +10,7 @@ import Column from '../components/Column';
 import api from '../api';
 import { motion } from 'framer-motion';
 import { useSelector, useDispatch } from 'react-redux';
-import { reloadData, selectDataToBeReload, selectModalOpen, toggleModal } from '../features/appSlice';
+import { reloadData, selectDataToBeReload, selectModalOpen, setProjectUsers, toggleModal } from '../features/appSlice';
 import { toast, ToastContainer } from 'react-toastify';
 
 type SelectedView = "Grid" | "List" | "Board"
@@ -68,13 +68,8 @@ const Project = () => {
   const getTasks = async (apiRoute: string) => {
     setIsLoading(true);
     try {
-      let response = await api.get(`/api/projects/${projectID}/${apiRoute}`, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
+      let response = await api.get(`/api/projects/${projectID}/${apiRoute}`);
       console.log(response.data);
-
       if(response.status === 200) { // get assigned tasks 
         let projectUsers: User[];
         if(apiRoute === "tasks/") { // all tasks
@@ -86,6 +81,7 @@ const Project = () => {
             }
             return project_assigned_User;
           });
+          dispatch(setProjectUsers(projectUsers)); // set project users in global state
           setUsers(projectUsers);
         } 
         const assignedTasks: MyTask[] = response.data.tasks.map((task: Task) => {
