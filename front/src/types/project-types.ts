@@ -121,3 +121,9 @@ export type ChatMessage = {
   receiver?: number | null,
   attachment?: string,
 }
+
+export type RoomMessage = {
+  content: string,
+  author: User | null | undefined,
+  timestamp: string,
+}

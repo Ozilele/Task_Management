@@ -82,6 +82,12 @@ export const formatDate = (dateString: string) => {
   return formattedDate
 }
 
+export const formatMessageDate = (dateString: string) => {
+  const date = new Date(dateString);
+  const formattedDate = `${date.getDate().toString().padStart(2, '0')}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getFullYear()} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+  return formattedDate;
+}
+
 export function stringToColor(string: string) {
   let hash = 0;
   let i;
