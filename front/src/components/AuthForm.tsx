@@ -79,15 +79,10 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
       api.interceptors.response.eject(authResponseInterceptor);  
     }
     if(method === "login") {
-      console.log("auth: " + authResponseInterceptor);
       try {
         response = await api.post(route, {
           email: input_values.email,
           password: input_values.password
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
         });
         localStorage.setItem(ACCESS_TOKEN, response.data.access);
         localStorage.setItem(REFRESH_TOKEN, response.data.refresh);
@@ -126,10 +121,6 @@ const AuthForm = ({ method, inputs, route }: AuthFormProps) => {
           username: input_values.username,
           email: input_values.email,
           password: input_values.password,
-        }, {
-          headers: {
-            'Content-Type': 'application/json'
-          }
         });
         if(response.status === 201) {
           setInputs(initialInputState);

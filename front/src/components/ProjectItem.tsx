@@ -23,7 +23,7 @@ const ProjectItem = ({ data }: ProjectItemProps) => {
 
   return (
     <article className='relative z-0 w-11/12 max-w-[450px] max-h-[450px] sm:w-45per md:w-5/12 lg:w-30per min-h-[250px] grid grid-rows-6 bg-zinc-700 px-3 py-2.5 md:px-4 md:py-3 rounded-md'>
-      <a href={tasksForProjectLink} className='absolute w-full h-full top-0 let-0 bg-white opacity-0 z-10 transition-opacity duration-300 hover:opacity-10'/>
+      <Link to={tasksForProjectLink} className='!absolute !w-full !h-full !top-0 !let-0 !bg-white !opacity-0 !z-10 !transition-opacity !duration-300 !hover:opacity-10'/>
       <div className='w-full text-sm truncate'>
         <p className='truncate'>ID: {random_id + data.id}</p>
       </div>
