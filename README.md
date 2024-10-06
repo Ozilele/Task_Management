@@ -15,3 +15,9 @@ On Backend:
 * Embedded SQLite Local Database for users, tasks, projects
 * JWT Authorization with access and refresh tokens implementation
 * Securing specific endpoints from unauthorized access 
+* Channels and groups implementation for websocket connection to backend, bidirectional communication implemented
+
+TO DO:
+- Social Authentication
+- Permissions on API to delete/update task
+- WebRTC video functionality to make some calls/etc(in future)
