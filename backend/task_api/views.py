@@ -1,6 +1,6 @@
 from rest_framework import generics
 from rest_framework.exceptions import ValidationError
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -15,8 +15,18 @@ class AssignedProjectList(generics.ListAPIView):
 
     def get_queryset(self): # get all projects in which user is assigned to
         user = self.request.user
-        return user.assigned_projects.all()
-        # return Project.objects.filter(team=user)
+        assigned_projects = user.assigned_projects.all()
+        return {
+            "user": user,
+            "assigned_projects": assigned_projects
+        }
+
+    def list(self, request, *args, **kwargs):
+        query_dict = self.get_queryset()
+        return Response({
+            "logged_user": UserModelSerializer(query_dict['user']).data,
+            "assigned_projects": ProjectSerializer(query_dict['assigned_projects'], many=True).data,
+        }, status=status.HTTP_200_OK)
 
 class CreatedProjectList(generics.ListAPIView):
     serializer_class = ProjectSerializer
@@ -37,6 +47,7 @@ class TaskList(APIView):
         tasks = project.tasks.all() # all the tasks to given project
         team = project.team.all() # the team in the project
         return Response({
+            # 'logged_user': UserModelSerializer(request.user).data, # logged in user
             'tasks': TaskSerializer(tasks, many=True).data, # serialization of tasks
             'project_team': UserModelSerializer(team, many=True).data # serialization of project_team
         }, status=status.HTTP_200_OK)
@@ -93,7 +104,7 @@ class TaskDetail(APIView): # View for getting single task, updating, deleting
         try:
             return Task.objects.get(id=pk)
         except Task.DoesNotExist:
-            pass
+            return Response(status=status.HTTP_400_BAD_REQUEST)
 
     def get(self, request, project_id, task_id, format=None):
         task = self.get_object(task_id)
@@ -114,36 +125,13 @@ class TaskDetail(APIView): # View for getting single task, updating, deleting
         task.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-# class TaskItem(generics.RetrieveAPIView):
-#     serializer_class = TaskSerializer
-#     permission_classes = [IsAuthenticated]
-#     lookup_field = "task_id"
-
-#     def get_queryset(self): # get task of given id of all tasks for specific project
-#         project = self.kwargs.get('project_id')
-#         return Task.objects.filter(project=project)
-    
-#     def get_object(self):
-#         return super().get_object()
-
-# class TaskDelete(generics.DestroyAPIView):
-#     serializer_class = TaskSerializer
-#     permission_classes = [IsAuthenticated]
-#     lookup_field = "task_id"
-
-#     def get_queryset(self):
-#         project = self.kwargs.get('project_id')
-#         return Task.objects.filter(project=project)
-
 # class TaskUpdate(generics.UpdateAPIView):
 #     serializer_class = TaskSerializer
 #     permission_classes = [IsAuthenticated]
 #     lookup_field = "task_id"
-
 #     def get_queryset(self): # get all tasks for given project
 #         project = self.kwargs.get('project_id')
 #         return Task.objects.filter(project=project)
-    
 #     def perform_update(self, serializer):
 #         project = self.kwargs.get('project_id')
 #         if serializer.is_valid() and project is not None:
@@ -151,4 +139,3 @@ class TaskDetail(APIView): # View for getting single task, updating, deleting
 #         else:
 #             print(serializer.errors)
 #             raise ValidationError("Project ID is required")
-    
